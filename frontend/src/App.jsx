@@ -44,38 +44,35 @@ function App() {
   const connectWallet = async () => {
     try {
       if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        
-        // Check if we're on Arc Testnet
-        const network = await provider.getNetwork()
-        const arcTestnetChainId = 5042002n
-        
-        if (network.chainId !== arcTestnetChainId) {
-          // Switch to Arc Testnet
+        // First, force switch to Arc Testnet
+        try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0x4D0A2A' }], // 5042002 in hex
-          }).catch(async (error) => {
-            if (error.code === 4902) {
-              // Chain not added, add it
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x4D0A2A',
-                  chainName: 'Arc Testnet',
-                  rpcUrls: ['https://rpc.testnet.arc.network'],
-                  nativeCurrency: {
-                    name: 'USDC',
-                    symbol: 'USDC',
-                    decimals: 6
-                  },
-                  blockExplorerUrls: ['https://testnet.arcscan.app']
-                }]
-              })
-            }
           })
+        } catch (error) {
+          if (error.code === 4902) {
+            // Chain not added, add it
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x4D0A2A',
+                chainName: 'Arc Testnet',
+                rpcUrls: ['https://rpc.testnet.arc.network'],
+                nativeCurrency: {
+                  name: 'USDC',
+                  symbol: 'USDC',
+                  decimals: 6
+                },
+                blockExplorerUrls: ['https://testnet.arcscan.app']
+              }]
+            })
+          } else {
+            throw error
+          }
         }
         
+        const provider = new ethers.BrowserProvider(window.ethereum)
         const signer = await provider.getSigner()
         const account = await signer.getAddress()
         
@@ -95,13 +92,22 @@ function App() {
         })
 
         console.log('Wallet connected:', account)
-        console.log('Network:', network.name, network.chainId)
+        console.log('Network: Arc Testnet')
       } else {
         alert('MetaMask bulunamadı!')
       }
     } catch (error) {
       console.error('Wallet connection error:', error)
+      alert('Arc Testnet\'e geçiş yapılamadı. Lütfen MetaMask\'ta Arc Testnet\'i ekleyin.')
     }
+  }
+
+  const disconnectWallet = () => {
+    setProvider(null)
+    setSigner(null)
+    setAccount(null)
+    setContracts({})
+    console.log('Wallet disconnected')
   }
 
   return (
@@ -110,6 +116,7 @@ function App() {
         <Header 
           account={account} 
           connectWallet={connectWallet}
+          disconnectWallet={disconnectWallet}
           contracts={contracts}
         />
         <Routes>

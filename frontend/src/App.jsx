@@ -45,6 +45,37 @@ function App() {
     try {
       if (window.ethereum) {
         const provider = new ethers.BrowserProvider(window.ethereum)
+        
+        // Check if we're on Arc Testnet
+        const network = await provider.getNetwork()
+        const arcTestnetChainId = 5042002n
+        
+        if (network.chainId !== arcTestnetChainId) {
+          // Switch to Arc Testnet
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x4D0A2A' }], // 5042002 in hex
+          }).catch(async (error) => {
+            if (error.code === 4902) {
+              // Chain not added, add it
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x4D0A2A',
+                  chainName: 'Arc Testnet',
+                  rpcUrls: ['https://rpc.testnet.arc.network'],
+                  nativeCurrency: {
+                    name: 'USDC',
+                    symbol: 'USDC',
+                    decimals: 6
+                  },
+                  blockExplorerUrls: ['https://testnet.arcscan.app']
+                }]
+              })
+            }
+          })
+        }
+        
         const signer = await provider.getSigner()
         const account = await signer.getAddress()
         
@@ -64,6 +95,7 @@ function App() {
         })
 
         console.log('Wallet connected:', account)
+        console.log('Network:', network.name, network.chainId)
       } else {
         alert('MetaMask bulunamadı!')
       }

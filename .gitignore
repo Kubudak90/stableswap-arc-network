@@ -65,3 +65,7 @@ typechain-types/
 
 # Deployed addresses
 deployed-addresses.json
+faucet-addresses.json
+stableswap-addresses.json
+vercel.json
+.vercel/

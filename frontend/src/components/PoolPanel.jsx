@@ -43,7 +43,7 @@ function PoolPanel({ contracts, account }) {
       const amount1Wei = ethers.parseUnits(amount1, 6)
       
       // Approve tokens (skip allowance check for now)
-      const swapAddress = "0x665A82180fa7a58e2efeF5270cC2c2974087A030"
+      const swapAddress = "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105" // StableSwap
       
       console.log("Approving tokens...")
       const approveTx0 = await contracts.token0.approve(swapAddress, amount0Wei)
@@ -90,7 +90,11 @@ function PoolPanel({ contracts, account }) {
           </div>
           <div className="info-card">
             <h3>Ücret Oranı</h3>
-            <div className="value">0.3%</div>
+            <div className="value">0.04%</div>
+          </div>
+          <div className="info-card">
+            <h3>Swap Oranı</h3>
+            <div className="value">1:1</div>
           </div>
         </div>
 

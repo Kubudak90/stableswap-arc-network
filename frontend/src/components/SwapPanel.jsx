@@ -35,9 +35,15 @@ function SwapPanel({ contracts, account }) {
 
       // Load pool reserves
       const [reserve0, reserve1] = await contracts.swap.getReserves()
+      const reserve0Formatted = ethers.formatUnits(reserve0, 6)
+      const reserve1Formatted = ethers.formatUnits(reserve1, 6)
+      
+      console.log('Raw reserves:', { reserve0: reserve0.toString(), reserve1: reserve1.toString() })
+      console.log('Formatted reserves:', { reserve0: reserve0Formatted, reserve1: reserve1Formatted })
+      
       setReserves({
-        reserve0: ethers.formatUnits(reserve0, 6),
-        reserve1: ethers.formatUnits(reserve1, 6)
+        reserve0: reserve0Formatted,
+        reserve1: reserve1Formatted
       })
     } catch (error) {
       console.error('Error loading data:', error)
@@ -58,7 +64,7 @@ function SwapPanel({ contracts, account }) {
       
       // Approve token (skip allowance check for now)
       const tokenContract = zeroForOne ? contracts.token0 : contracts.token1
-      const swapAddress = "0x665A82180fa7a58e2efeF5270cC2c2974087A030"
+      const swapAddress = "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105" // StableSwap
       
       console.log("Approving token...")
       const approveTx = await tokenContract.approve(swapAddress, amountInWei)
@@ -85,18 +91,17 @@ function SwapPanel({ contracts, account }) {
   const handleAmountInChange = async (value) => {
     setAmountIn(value)
     
-    if (value && !isNaN(value) && contracts.swap && reserves.reserve0 > 0 && reserves.reserve1 > 0) {
+    // Check if reserves are valid numbers
+    const reserve0Num = parseFloat(reserves.reserve0)
+    const reserve1Num = parseFloat(reserves.reserve1)
+    
+    if (value && !isNaN(value) && contracts.swap && reserve0Num > 0 && reserve1Num > 0) {
       try {
-        // Calculate expected output using Uniswap V2 formula
+        // Stabilcoin için 1:1 oran + 0.04% fee (4 bps)
         const amountInWei = ethers.parseUnits(value, 6)
-        const reserveIn = zeroForOne ? ethers.parseUnits(reserves.reserve0, 6) : ethers.parseUnits(reserves.reserve1, 6)
-        const reserveOut = zeroForOne ? ethers.parseUnits(reserves.reserve1, 6) : ethers.parseUnits(reserves.reserve0, 6)
         
-        // Apply 0.3% fee (997/1000)
-        const amountInWithFee = amountInWei * 997n / 1000n
-        const numerator = amountInWithFee * reserveOut
-        const denominator = reserveIn * 1000n + amountInWithFee
-        const amountOutWei = numerator / denominator
+        // 1:1 oran, sadece fee çıkar: amountOut = amountIn * (10000 - 4) / 10000
+        const amountOutWei = amountInWei * 9996n / 10000n
         
         const amountOutFormatted = ethers.formatUnits(amountOutWei, 6)
         setAmountOut(amountOutFormatted)
@@ -128,9 +133,34 @@ function SwapPanel({ contracts, account }) {
           </div>
         )}
 
-        {account && reserves.reserve0 === '0' && reserves.reserve1 === '0' && (
+        {account && parseFloat(reserves.reserve0) === 0 && parseFloat(reserves.reserve1) === 0 && (
           <div className="error">
             ⚠️ Havuzda likidite yok! Önce Pool sekmesinden likidite ekleyin.
+          </div>
+        )}
+
+        {/* Pool Info */}
+        {account && parseFloat(reserves.reserve0) > 0 && parseFloat(reserves.reserve1) > 0 && (
+          <div style={{ 
+            background: '#f0f9ff', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #0ea5e9'
+          }}>
+            <div style={{ fontSize: '0.9rem', color: '#0369a1', marginBottom: '8px', fontWeight: 'bold' }}>
+              📊 Pool Bilgileri
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>
+              <div>tUSDC Rezervi: <strong>{parseFloat(reserves.reserve0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+              <div>tUSDT Rezervi: <strong>{parseFloat(reserves.reserve1).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+              <div style={{ marginTop: '5px' }}>
+                Oran: <strong>1:1 (Stabilcoin)</strong>
+              </div>
+              <div style={{ marginTop: '3px', fontSize: '0.75rem', opacity: 0.8 }}>
+                Ücret: 0.04% (4 bps)
+              </div>
+            </div>
           </div>
         )}
 

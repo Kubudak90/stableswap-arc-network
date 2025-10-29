@@ -58,10 +58,11 @@ function SwapPanel({ contracts, account }) {
       
       // Approve token if needed
       const tokenContract = zeroForOne ? contracts.token0 : contracts.token1
-      const allowance = await tokenContract.allowance(account, await contracts.swap.getAddress())
+      const swapAddress = "0x665A82180fa7a58e2efeF5270cC2c2974087A030"
+      const allowance = await tokenContract.allowance(account, swapAddress)
       
       if (allowance < amountInWei) {
-        const approveTx = await tokenContract.approve(await contracts.swap.getAddress(), amountInWei)
+        const approveTx = await tokenContract.approve(swapAddress, amountInWei)
         await approveTx.wait()
       }
       

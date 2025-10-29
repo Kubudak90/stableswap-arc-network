@@ -45,34 +45,7 @@ function App() {
   const connectWallet = async () => {
     try {
       if (window.ethereum) {
-        // First, force switch to Arc Testnet
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x4D0A2A' }], // 5042002 in hex
-          })
-        } catch (error) {
-          if (error.code === 4902) {
-            // Chain not added, add it
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: '0x4D0A2A',
-                chainName: 'Arc Testnet',
-                rpcUrls: ['https://rpc.testnet.arc.network'],
-                nativeCurrency: {
-                  name: 'USDC',
-                  symbol: 'USDC',
-                  decimals: 6
-                },
-                blockExplorerUrls: ['https://testnet.arcscan.app']
-              }]
-            })
-          } else {
-            throw error
-          }
-        }
-        
+        // First, connect wallet
         const provider = new ethers.BrowserProvider(window.ethereum)
         const signer = await provider.getSigner()
         const account = await signer.getAddress()
@@ -80,6 +53,44 @@ function App() {
         setProvider(provider)
         setSigner(signer)
         setAccount(account)
+
+        console.log('Wallet connected:', account)
+
+        // Then, try to switch to Arc Testnet
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x4D0A2A' }], // 5042002 in hex
+          })
+          console.log('Switched to Arc Testnet')
+        } catch (error) {
+          if (error.code === 4902) {
+            // Chain not added, add it
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x4D0A2A',
+                  chainName: 'Arc Testnet',
+                  rpcUrls: ['https://rpc.testnet.arc.network'],
+                  nativeCurrency: {
+                    name: 'USDC',
+                    symbol: 'USDC',
+                    decimals: 6
+                  },
+                  blockExplorerUrls: ['https://testnet.arcscan.app']
+                }]
+              })
+              console.log('Added Arc Testnet')
+            } catch (addError) {
+              console.warn('Could not add Arc Testnet:', addError)
+              alert('Arc Testnet eklenemedi. Lütfen manuel olarak ekleyin.')
+            }
+          } else {
+            console.warn('Could not switch to Arc Testnet:', error)
+            alert('Arc Testnet\'e geçiş yapılamadı. Lütfen manuel olarak geçin.')
+          }
+        }
 
         // Initialize contracts
         const swapContract = new ethers.Contract(CONTRACTS.swap, SWAP_ABI, signer)
@@ -92,14 +103,13 @@ function App() {
           token1: token1Contract
         })
 
-        console.log('Wallet connected:', account)
-        console.log('Network: Arc Testnet')
+        console.log('Contracts initialized')
       } else {
         alert('MetaMask bulunamadı!')
       }
     } catch (error) {
       console.error('Wallet connection error:', error)
-      alert('Arc Testnet\'e geçiş yapılamadı. Lütfen MetaMask\'ta Arc Testnet\'i ekleyin.')
+      alert('Cüzdan bağlanamadı: ' + error.message)
     }
   }
 

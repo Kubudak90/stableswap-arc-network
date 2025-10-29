@@ -37,9 +37,10 @@ function App() {
   const [account, setAccount] = useState(null)
   const [contracts, setContracts] = useState({})
 
-  useEffect(() => {
-    connectWallet()
-  }, [])
+  // Remove auto-connect on page load
+  // useEffect(() => {
+  //   connectWallet()
+  // }, [])
 
   const connectWallet = async () => {
     try {

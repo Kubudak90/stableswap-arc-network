@@ -42,20 +42,17 @@ function PoolPanel({ contracts, account }) {
       const amount0Wei = ethers.parseUnits(amount0, 6)
       const amount1Wei = ethers.parseUnits(amount1, 6)
       
-      // Approve tokens if needed
+      // Approve tokens (skip allowance check for now)
       const swapAddress = "0x665A82180fa7a58e2efeF5270cC2c2974087A030"
-      const allowance0 = await contracts.token0.allowance(account, swapAddress)
-      const allowance1 = await contracts.token1.allowance(account, swapAddress)
       
-      if (allowance0 < amount0Wei) {
-        const approveTx0 = await contracts.token0.approve(swapAddress, amount0Wei)
-        await approveTx0.wait()
-      }
+      console.log("Approving tokens...")
+      const approveTx0 = await contracts.token0.approve(swapAddress, amount0Wei)
+      await approveTx0.wait()
+      console.log("tUSDC approved")
       
-      if (allowance1 < amount1Wei) {
-        const approveTx1 = await contracts.token1.approve(swapAddress, amount1Wei)
-        await approveTx1.wait()
-      }
+      const approveTx1 = await contracts.token1.approve(swapAddress, amount1Wei)
+      await approveTx1.wait()
+      console.log("tUSDT approved")
       
       // Add liquidity
       const addTx = await contracts.swap.addLiquidity(amount0Wei, amount1Wei)

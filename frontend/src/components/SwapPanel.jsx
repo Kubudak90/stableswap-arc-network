@@ -56,15 +56,14 @@ function SwapPanel({ contracts, account }) {
     try {
       const amountInWei = ethers.parseUnits(amountIn, 6)
       
-      // Approve token if needed
+      // Approve token (skip allowance check for now)
       const tokenContract = zeroForOne ? contracts.token0 : contracts.token1
       const swapAddress = "0x665A82180fa7a58e2efeF5270cC2c2974087A030"
-      const allowance = await tokenContract.allowance(account, swapAddress)
       
-      if (allowance < amountInWei) {
-        const approveTx = await tokenContract.approve(swapAddress, amountInWei)
-        await approveTx.wait()
-      }
+      console.log("Approving token...")
+      const approveTx = await tokenContract.approve(swapAddress, amountInWei)
+      await approveTx.wait()
+      console.log("Token approved")
       
       // Execute swap
       const swapTx = await contracts.swap.swap(zeroForOne, amountInWei)

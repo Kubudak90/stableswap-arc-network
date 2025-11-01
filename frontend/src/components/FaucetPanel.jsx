@@ -9,10 +9,10 @@ function FaucetPanel({ contracts, account }) {
   const [timeUntilNextClaim, setTimeUntilNextClaim] = useState(0)
   const [faucetContract, setFaucetContract] = useState(null)
 
-  // Faucet contract address
-  const FAUCET_ADDRESS = "0x1809123f52ebE8f80e328D99a16Ee42D679B2bA6"
+  // Faucet V2 contract address (with USDY support)
+  const FAUCET_ADDRESS = "0xd23bC9993699bAFa31fc626619ad73c43E032588"
 
-  // Faucet ABI
+  // Faucet V2 ABI
   const FAUCET_ABI = [
     "function claimTokens() external",
     "function canClaim(address user) view returns (bool)",
@@ -67,7 +67,7 @@ function FaucetPanel({ contracts, account }) {
       // Wait for confirmation
       await tx.wait()
       
-      setSuccess(`🎉 Faucet tokens claimed! 1000 tUSDC + 1000 tUSDT`)
+      setSuccess(`🎉 Faucet tokens claimed! 1000 tUSDC + 1000 tUSDT + 1000 tUSDY`)
       
       // Refresh claim status
       await checkClaimStatus(faucetContract)
@@ -111,7 +111,7 @@ function FaucetPanel({ contracts, account }) {
         }}>
           <h3 style={{ color: '#0369a1', marginBottom: '10px' }}>💡 Nasıl Çalışır?</h3>
           <p style={{ color: '#0c4a6e', margin: 0 }}>
-            Bu faucet test amaçlıdır. Her kullanıcı 24 saatte bir 1000 tUSDC ve 1000 tUSDT token alabilir.
+            Bu faucet test amaçlıdır. Her kullanıcı 24 saatte bir 1000 tUSDC + 1000 tUSDT + 1000 tUSDY token alabilir.
             Faucet kontratı: <code>{FAUCET_ADDRESS}</code>
           </p>
         </div>
@@ -135,7 +135,7 @@ function FaucetPanel({ contracts, account }) {
             </div>
             <div style={{ fontSize: '0.9rem', color: '#666' }}>
               {canClaim 
-                ? '1000 tUSDC + 1000 tUSDT alabilirsiniz'
+                ? '1000 tUSDC + 1000 tUSDT + 1000 tUSDY alabilirsiniz'
                 : `Sonraki claim: ${formatTime(timeUntilNextClaim)}`
               }
             </div>
@@ -160,7 +160,7 @@ function FaucetPanel({ contracts, account }) {
             }}
           >
             {loading ? '⏳ Token Alınıyor...' : 
-             canClaim ? '🚰 Test Token Al (1000 tUSDC + 1000 tUSDT)' :
+             canClaim ? '🚰 Test Token Al (1000 tUSDC + 1000 tUSDT + 1000 tUSDY)' :
              '⏳ Bekleme süresi aktif'}
           </button>
         </div>

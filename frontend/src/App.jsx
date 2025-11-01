@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import SwapPanel from './components/SwapPanel'
 import PoolPanel from './components/PoolPanel'
+import Swap3PoolPanel from './components/Swap3PoolPanel'
+import Pool3Panel from './components/Pool3Panel'
 import FaucetPanel from './components/FaucetPanel'
 import Header from './components/Header'
 import { ethers } from 'ethers'
@@ -10,10 +12,13 @@ import { ethers } from 'ethers'
 const CONTRACTS = {
   testUSDC: "0x53646C53e712cE320182E289E7364d4d0e4D6D01",
   testUSDT: "0x2587521Ca49A69813991E9076B6eFbBb5CbfD19E",
-  swap: "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105" // StableSwap - 1:1 oran
+  testUSDY: "0x54D12437404aD9a4E7506C4497711b21CCE3ABCd", // TestUSDY
+  swap: "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105", // StableSwap - 1:1 oran (2 tokens)
+  swap3Pool: "0xa904a6FC1c8dc6B23790f823A4e523FC5fC85B09", // StableSwap3Pool - 1:1:1 oran (3 tokens)
+  faucetV2: "0xd23bC9993699bAFa31fc626619ad73c43E032588" // TestTokenFaucetV2 (with USDY)
 }
 
-// StableSwap ABI
+// StableSwap ABI (2 tokens)
 const SWAP_ABI = [
   "function addLiquidity(uint256 amount0, uint256 amount1) external",
   "function swap(bool zeroForOne, uint256 amountIn) external returns (uint256 amountOut)",
@@ -21,6 +26,18 @@ const SWAP_ABI = [
   "function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256)",
   "function token0() external view returns (address)",
   "function token1() external view returns (address)"
+]
+
+// StableSwap3Pool ABI (3 tokens)
+const SWAP3POOL_ABI = [
+  "function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
+  "function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
+  "function swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn) external returns (uint256 amountOut)",
+  "function getReserves() external view returns (uint256, uint256, uint256)",
+  "function getAmountOut(uint256 amountIn, uint8 tokenIn, uint8 tokenOut) external view returns (uint256)",
+  "function token0() external view returns (address)",
+  "function token1() external view returns (address)",
+  "function token2() external view returns (address)"
 ]
 
 // ERC20 ABI
@@ -54,13 +71,17 @@ function App() {
             const provider = new ethers.BrowserProvider(window.ethereum)
             provider.getSigner().then(signer => {
               const swapContract = new ethers.Contract(CONTRACTS.swap, SWAP_ABI, signer)
+              const swap3PoolContract = new ethers.Contract(CONTRACTS.swap3Pool, SWAP3POOL_ABI, signer)
               const token0Contract = new ethers.Contract(CONTRACTS.testUSDC, ERC20_ABI, signer)
               const token1Contract = new ethers.Contract(CONTRACTS.testUSDT, ERC20_ABI, signer)
+              const token2Contract = new ethers.Contract(CONTRACTS.testUSDY, ERC20_ABI, signer)
 
               setContracts({
                 swap: swapContract,
+                swap3Pool: swap3PoolContract,
                 token0: token0Contract,
-                token1: token1Contract
+                token1: token1Contract,
+                token2: token2Contract
               })
             })
           }
@@ -134,13 +155,17 @@ function App() {
 
         // Initialize contracts after network is set
         const swapContract = new ethers.Contract(CONTRACTS.swap, SWAP_ABI, signer)
+        const swap3PoolContract = new ethers.Contract(CONTRACTS.swap3Pool, SWAP3POOL_ABI, signer)
         const token0Contract = new ethers.Contract(CONTRACTS.testUSDC, ERC20_ABI, signer)
         const token1Contract = new ethers.Contract(CONTRACTS.testUSDT, ERC20_ABI, signer)
+        const token2Contract = new ethers.Contract(CONTRACTS.testUSDY, ERC20_ABI, signer)
 
         setContracts({
           swap: swapContract,
+          swap3Pool: swap3PoolContract,
           token0: token0Contract,
-          token1: token1Contract
+          token1: token1Contract,
+          token2: token2Contract
         })
 
         console.log('Contracts initialized')
@@ -244,6 +269,8 @@ function App() {
         <Routes>
           <Route path="/" element={<SwapPanel contracts={contracts} account={account} />} />
           <Route path="/pool" element={<PoolPanel contracts={contracts} account={account} />} />
+          <Route path="/3pool" element={<Swap3PoolPanel contracts={contracts} account={account} />} />
+          <Route path="/3pool-manage" element={<Pool3Panel contracts={contracts} account={account} />} />
           <Route path="/faucet" element={<FaucetPanel contracts={contracts} account={account} />} />
         </Routes>
       </div>

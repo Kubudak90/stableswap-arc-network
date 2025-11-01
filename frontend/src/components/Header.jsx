@@ -106,11 +106,17 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
         
         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <nav>
-            <Link to="/" style={{ marginRight: '20px', color: 'white', textDecoration: 'none' }}>
-              Swap
+            <Link to="/" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+              Swap (2)
             </Link>
-            <Link to="/pool" style={{ marginRight: '20px', color: 'white', textDecoration: 'none' }}>
-              Pool
+            <Link to="/pool" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+              Pool (2)
+            </Link>
+            <Link to="/3pool" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+              Swap (3)
+            </Link>
+            <Link to="/3pool-manage" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+              Pool (3)
             </Link>
             <Link to="/faucet" style={{ color: 'white', textDecoration: 'none' }}>
               🚰 Faucet

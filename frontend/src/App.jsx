@@ -4,18 +4,20 @@ import SwapPanel from './components/SwapPanel'
 import PoolPanel from './components/PoolPanel'
 import Swap3PoolPanel from './components/Swap3PoolPanel'
 import Pool3Panel from './components/Pool3Panel'
+import UnifiedSwapPanel from './components/UnifiedSwapPanel'
+import UnifiedPoolPanel from './components/UnifiedPoolPanel'
 import FaucetPanel from './components/FaucetPanel'
 import Header from './components/Header'
 import { ethers } from 'ethers'
 
-// Deployed contract addresses
+// Deployed contract addresses (NEW - with mintable tokens)
 const CONTRACTS = {
-  testUSDC: "0x53646C53e712cE320182E289E7364d4d0e4D6D01",
-  testUSDT: "0x2587521Ca49A69813991E9076B6eFbBb5CbfD19E",
-  testUSDY: "0x54D12437404aD9a4E7506C4497711b21CCE3ABCd", // TestUSDY
-  swap: "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105", // StableSwap - 1:1 oran (2 tokens)
-  swap3Pool: "0xa904a6FC1c8dc6B23790f823A4e523FC5fC85B09", // StableSwap3Pool - 1:1:1 oran (3 tokens)
-  faucetV2: "0xd23bC9993699bAFa31fc626619ad73c43E032588" // TestTokenFaucetV2 (with USDY)
+  testUSDC: "0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733", // TestUSDCV2 (mintable)
+  testUSDT: "0x787804d1f98F4Da65C6de63AaA00906A8C6868F3", // TestUSDTV2 (mintable)
+  testUSDY: "0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a", // TestUSDYV2 (mintable)
+  swap: "0xC8B54F9085FCA8F45cc461002A8bd381D1240a47", // StableSwap - 1:1 oran (2 tokens)
+  swap3Pool: "0x34a0d6A10f26A31Ca2f7F71d4eA4B76F1Cbc2806", // StableSwap3Pool - 1:1:1 oran (3 tokens)
+  faucetV3: "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0" // TestTokenFaucetV3 (with developer support)
 }
 
 // StableSwap ABI (2 tokens)
@@ -267,11 +269,12 @@ function App() {
           currentChainId={currentChainId}
         />
         <Routes>
-          <Route path="/" element={<SwapPanel contracts={contracts} account={account} />} />
-          <Route path="/pool" element={<PoolPanel contracts={contracts} account={account} />} />
-          <Route path="/3pool" element={<Swap3PoolPanel contracts={contracts} account={account} />} />
-          <Route path="/3pool-manage" element={<Pool3Panel contracts={contracts} account={account} />} />
+          <Route path="/" element={<UnifiedSwapPanel contracts={contracts} account={account} />} />
+          <Route path="/pool" element={<UnifiedPoolPanel contracts={contracts} account={account} />} />
           <Route path="/faucet" element={<FaucetPanel contracts={contracts} account={account} />} />
+          {/* Legacy routes - kept for backwards compatibility */}
+          <Route path="/pool-old-2" element={<PoolPanel contracts={contracts} account={account} />} />
+          <Route path="/pool-old-3" element={<Pool3Panel contracts={contracts} account={account} />} />
         </Routes>
       </div>
     </Router>

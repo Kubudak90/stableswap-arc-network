@@ -67,5 +67,11 @@ typechain-types/
 deployed-addresses.json
 faucet-addresses.json
 stableswap-addresses.json
+stableswap-v2-addresses.json
+3pool-addresses.json
+faucet-v2-addresses.json
+faucet-v3-addresses.json
+faucet-v3-new-addresses.json
+new-contracts-addresses.json
 vercel.json
 .vercel/

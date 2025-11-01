@@ -178,7 +178,14 @@ function UnifiedSwapPanel({ contracts, account }) {
   return (
     <div className="container">
       <div className="card">
-        <h2 style={{ marginBottom: '30px', textAlign: 'center', color: '#333' }}>
+        <h2 style={{ 
+          marginBottom: '32px', 
+          textAlign: 'center', 
+          color: '#1e293b',
+          fontSize: '1.75rem',
+          fontWeight: '700',
+          letterSpacing: '-0.5px'
+        }}>
           🔄 Token Takası
         </h2>
 
@@ -196,36 +203,30 @@ function UnifiedSwapPanel({ contracts, account }) {
 
         {/* Pool Info */}
         {account && hasLiquidity() && (
-          <div style={{ 
-            background: '#f0f9ff', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #0ea5e9'
-          }}>
-            <div style={{ fontSize: '0.9rem', color: '#0369a1', marginBottom: '8px', fontWeight: 'bold' }}>
+          <div className="pool-info-card">
+            <div style={{ fontSize: '0.95rem', color: '#1e40af', marginBottom: '12px', fontWeight: '700' }}>
               📊 Pool Bilgileri ({use3Pool ? '3Pool' : '2Pool'})
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>
+            <div style={{ fontSize: '0.9rem', color: '#1e3a8a', lineHeight: '1.8' }}>
               {use3Pool ? (
                 <>
-                  <div>tUSDC Rezervi: <strong>{parseFloat(currentReserves.reserve0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
-                  <div>tUSDT Rezervi: <strong>{parseFloat(currentReserves.reserve1).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
-                  <div>tUSDY Rezervi: <strong>{parseFloat(currentReserves.reserve2).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
-                  <div style={{ marginTop: '5px' }}>
+                  <div>tUSDC Rezervi: <strong style={{ color: '#6366f1' }}>{parseFloat(currentReserves.reserve0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+                  <div>tUSDT Rezervi: <strong style={{ color: '#6366f1' }}>{parseFloat(currentReserves.reserve1).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+                  <div>tUSDY Rezervi: <strong style={{ color: '#6366f1' }}>{parseFloat(currentReserves.reserve2).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #93c5fd' }}>
                     Oran: <strong>1:1:1 (Stabilcoin)</strong>
                   </div>
                 </>
               ) : (
                 <>
-                  <div>tUSDC Rezervi: <strong>{parseFloat(currentReserves.reserve0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
-                  <div>tUSDT Rezervi: <strong>{parseFloat(currentReserves.reserve1).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
-                  <div style={{ marginTop: '5px' }}>
+                  <div>tUSDC Rezervi: <strong style={{ color: '#6366f1' }}>{parseFloat(currentReserves.reserve0).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+                  <div>tUSDT Rezervi: <strong style={{ color: '#6366f1' }}>{parseFloat(currentReserves.reserve1).toLocaleString('tr-TR', { maximumFractionDigits: 6 })}</strong></div>
+                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #93c5fd' }}>
                     Oran: <strong>1:1 (Stabilcoin)</strong>
                   </div>
                 </>
               )}
-              <div style={{ marginTop: '3px', fontSize: '0.75rem', opacity: 0.8 }}>
+              <div style={{ marginTop: '6px', fontSize: '0.8rem', opacity: 0.85 }}>
                 Ücret: 0.04% (4 bps)
               </div>
             </div>
@@ -248,7 +249,6 @@ function UnifiedSwapPanel({ contracts, account }) {
               setAmountIn('')
               setAmountOut('')
             }}
-            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
           >
             <option value={0}>tUSDC - Bakiye: {balances.token0}</option>
             <option value={1}>tUSDT - Bakiye: {balances.token1}</option>
@@ -256,7 +256,7 @@ function UnifiedSwapPanel({ contracts, account }) {
           </select>
         </div>
 
-        <div style={{ textAlign: 'center', margin: '15px 0' }}>
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
           <button
             onClick={() => {
               const temp = tokenInIndex
@@ -265,15 +265,7 @@ function UnifiedSwapPanel({ contracts, account }) {
               setAmountIn('')
               setAmountOut('')
             }}
-            style={{
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1.2rem'
-            }}
+            className="swap-arrow-btn"
           >
             ⇄ Değiştir
           </button>
@@ -292,7 +284,6 @@ function UnifiedSwapPanel({ contracts, account }) {
               setAmountIn('')
               setAmountOut('')
             }}
-            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
           >
             <option value={0}>tUSDC - Bakiye: {balances.token0}</option>
             <option value={1}>tUSDT - Bakiye: {balances.token1}</option>
@@ -301,15 +292,7 @@ function UnifiedSwapPanel({ contracts, account }) {
         </div>
 
         {/* Router indicator */}
-        <div style={{
-          background: '#e0f2fe',
-          padding: '10px',
-          borderRadius: '6px',
-          marginBottom: '15px',
-          fontSize: '0.85rem',
-          color: '#0369a1',
-          textAlign: 'center'
-        }}>
+        <div className="router-indicator">
           🎯 <strong>{tokenNames[tokenInIndex]}</strong> → <strong>{tokenNames[tokenOutIndex]}</strong> swap için <strong>{poolType}</strong> kullanılıyor
         </div>
 
@@ -331,7 +314,7 @@ function UnifiedSwapPanel({ contracts, account }) {
             value={amountOut}
             readOnly
             placeholder="0.0"
-            style={{ background: '#f8f9fa' }}
+            style={{ background: '#f9fafb', fontWeight: '600', color: '#64748b' }}
           />
         </div>
 
@@ -356,8 +339,17 @@ function UnifiedSwapPanel({ contracts, account }) {
           {loading ? 'İşlem Yapılıyor...' : `Swap Yap (${tokenNames[tokenInIndex]} → ${tokenNames[tokenOutIndex]})`}
         </button>
 
-        <div style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
-          <p>💡 Token seçimine göre otomatik olarak en uygun pool seçilir!</p>
+        <div style={{ 
+          marginTop: '24px', 
+          fontSize: '0.9rem', 
+          color: '#64748b', 
+          textAlign: 'center',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <p style={{ margin: 0, fontWeight: '500' }}>💡 Token seçimine göre otomatik olarak en uygun pool seçilir!</p>
         </div>
       </div>
     </div>

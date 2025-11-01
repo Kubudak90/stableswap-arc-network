@@ -15,7 +15,7 @@ const CONTRACTS = {
   testUSDC: "0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733", // TestUSDCV2 (mintable)
   testUSDT: "0x787804d1f98F4Da65C6de63AaA00906A8C6868F3", // TestUSDTV2 (mintable)
   testUSDY: "0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a", // TestUSDYV2 (mintable)
-  swap: "0xC8B54F9085FCA8F45cc461002A8bd381D1240a47", // StableSwap - 1:1 oran (2 tokens)
+  swap: "0xC4d8543f5b879eDe6885c43647E32e67Ca6DFC87", // StableSwap V2 - 1:1 oran (2 tokens, with removeLiquidity)
   swap3Pool: "0x34a0d6A10f26A31Ca2f7F71d4eA4B76F1Cbc2806", // StableSwap3Pool - 1:1:1 oran (3 tokens)
   faucetV3: "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0" // TestTokenFaucetV3 (with developer support)
 }
@@ -23,6 +23,7 @@ const CONTRACTS = {
 // StableSwap ABI (2 tokens)
 const SWAP_ABI = [
   "function addLiquidity(uint256 amount0, uint256 amount1) external",
+  "function removeLiquidity(uint256 amount0, uint256 amount1) external",
   "function swap(bool zeroForOne, uint256 amountIn) external returns (uint256 amountOut)",
   "function getReserves() external view returns (uint256, uint256)",
   "function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256)",

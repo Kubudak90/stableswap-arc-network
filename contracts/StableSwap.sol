@@ -22,6 +22,7 @@ contract StableSwap {
 
     event Swap(address indexed user, bool zeroForOne, uint256 amountIn, uint256 amountOut);
     event AddLiquidity(address indexed provider, uint256 amount0, uint256 amount1);
+    event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1);
 
     constructor(address _token0, address _token1) {
         token0 = IERC20(_token0);
@@ -36,6 +37,18 @@ contract StableSwap {
         reserve1 += amount1;
         
         emit AddLiquidity(msg.sender, amount0, amount1);
+    }
+
+    function removeLiquidity(uint256 amount0, uint256 amount1) external {
+        require(reserve0 >= amount0 && reserve1 >= amount1, "Insufficient liquidity");
+        
+        reserve0 -= amount0;
+        reserve1 -= amount1;
+        
+        token0.safeTransfer(msg.sender, amount0);
+        token1.safeTransfer(msg.sender, amount1);
+        
+        emit RemoveLiquidity(msg.sender, amount0, amount1);
     }
 
     function swap(bool zeroForOne, uint256 amountIn) external returns (uint256 amountOut) {

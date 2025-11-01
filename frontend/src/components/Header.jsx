@@ -104,15 +104,15 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
         </div>
         <p>Arc Network üzerinde stabilcoin takası</p>
         
-        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <nav>
-            <Link to="/" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <nav className="header-nav">
+            <Link to="/">
               🔄 Swap
             </Link>
-            <Link to="/pool" style={{ marginRight: '15px', color: 'white', textDecoration: 'none' }}>
+            <Link to="/pool">
               💧 Pool
             </Link>
-            <Link to="/faucet" style={{ color: 'white', textDecoration: 'none' }}>
+            <Link to="/faucet">
               🚰 Faucet
             </Link>
           </nav>
@@ -136,20 +136,12 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
                 </div>
                 
                 {/* Network Buttons */}
-                <div style={{ marginTop: '8px', display: 'flex', gap: '5px' }}>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {networkStatus && networkStatus.name !== 'Arc Testnet' && (
                     <button 
                       onClick={switchToArcNetwork}
-                      style={{
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold'
-                      }}
+                      className="header-btn header-btn-primary"
+                      style={{ fontSize: '0.8rem', padding: '6px 12px' }}
                     >
                       🌐 Arc'e Geç
                     </button>
@@ -157,16 +149,8 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
                   
                   <button 
                     onClick={addArcNetwork}
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: 'white',
-                      border: 'none',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      fontWeight: 'bold'
-                    }}
+                    className="header-btn header-btn-success"
+                    style={{ fontSize: '0.8rem', padding: '6px 12px' }}
                   >
                     ➕ Arc Ekle
                   </button>
@@ -174,51 +158,34 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
                 
                 <button 
                   onClick={disconnectWallet}
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    marginTop: '5px'
-                  }}
+                  className="header-btn"
+                  style={{ fontSize: '0.85rem', padding: '6px 12px', marginTop: '8px', width: '100%' }}
                 >
                   Disconnect
                 </button>
               </div>
             ) : (
-              <div>
+              <div style={{ textAlign: 'right' }}>
                 <button 
                   onClick={connectWallet}
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    marginBottom: '8px'
+                  className="header-btn"
+                  style={{ 
+                    padding: '10px 20px',
+                    fontSize: '1rem',
+                    marginBottom: '10px',
+                    width: '100%',
+                    fontWeight: '600'
                   }}
                 >
                   🔗 Wallet Bağla
                 </button>
                 
                 {/* Network buttons for non-connected users */}
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                   <button 
                     onClick={addArcNetwork}
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold'
-                    }}
+                    className="header-btn header-btn-success"
+                    style={{ fontSize: '0.85rem', padding: '8px 14px' }}
                   >
                     ➕ Arc Network Ekle
                   </button>

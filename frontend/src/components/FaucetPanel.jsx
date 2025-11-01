@@ -212,25 +212,32 @@ function FaucetPanel({ contracts, account }) {
   return (
     <div className="container">
       <div className="card">
-        <h2 style={{ marginBottom: '30px', textAlign: 'center', color: '#333' }}>
+        <h2 style={{ 
+          marginBottom: '32px', 
+          textAlign: 'center', 
+          color: '#1e293b',
+          fontSize: '1.75rem',
+          fontWeight: '700',
+          letterSpacing: '-0.5px'
+        }}>
           🚰 Test Token Faucet
         </h2>
 
-        <div style={{ 
-          background: '#f0f9ff', 
-          padding: '20px', 
-          borderRadius: '10px', 
-          marginBottom: '20px',
-          border: '1px solid #0ea5e9'
-        }}>
-          <h3 style={{ color: '#0369a1', marginBottom: '10px' }}>💡 Nasıl Çalışır?</h3>
-          <p style={{ color: '#0c4a6e', margin: 0 }}>
+        <div className="pool-info-card" style={{ borderColor: '#60a5fa' }}>
+          <h3 style={{ color: '#1e40af', marginBottom: '12px', fontSize: '1.1rem', fontWeight: '700' }}>💡 Nasıl Çalışır?</h3>
+          <p style={{ color: '#1e3a8a', margin: 0, lineHeight: '1.7' }}>
             Bu faucet test amaçlıdır. {isDeveloper ? (
               <><strong style={{color: '#059669'}}>👨‍💻 Developer Modu:</strong> Cooldown yok, her çekişte 100,000 token!</>
             ) : (
               <>Her kullanıcı 24 saatte bir 1,000 tUSDC + 1,000 tUSDT + 1,000 tUSDY token alabilir.</>
             )}
-            <br />Faucet kontratı: <code>{FAUCET_ADDRESS}</code>
+            <br />Faucet kontratı: <code style={{ 
+              background: 'rgba(99, 102, 241, 0.1)', 
+              padding: '2px 6px', 
+              borderRadius: '4px',
+              fontSize: '0.85rem',
+              fontFamily: 'monospace'
+            }}>{FAUCET_ADDRESS}</code>
           </p>
         </div>
 
@@ -241,17 +248,14 @@ function FaucetPanel({ contracts, account }) {
         )}
 
         {account && faucetContract && (
-          <div style={{ 
-            background: canClaim ? '#f0fdf4' : '#fef3c7', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: `1px solid ${canClaim ? '#22c55e' : '#f59e0b'}`
+          <div className="pool-info-card" style={{ 
+            background: canClaim ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', 
+            borderColor: canClaim ? '#22c55e' : '#f59e0b'
           }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+            <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '1.05rem', color: canClaim ? '#15803d' : '#d97706' }}>
               {canClaim ? '✅ Token alabilirsiniz!' : '⏳ Bekleme süresi'}
             </div>
-            <div style={{ fontSize: '0.9rem', color: '#666' }}>
+            <div style={{ fontSize: '0.95rem', color: canClaim ? '#166534' : '#92400e', lineHeight: '1.6' }}>
               {canClaim 
                 ? (isDeveloper 
                   ? '👨‍💻 Developer: 100,000 tUSDC + 100,000 tUSDT + 100,000 tUSDY alabilirsiniz (Cooldown yok!)'
@@ -266,42 +270,29 @@ function FaucetPanel({ contracts, account }) {
 
         {/* Developer Section */}
         {isDeveloper && (
-          <div style={{ 
-            background: '#eff6ff', 
-            padding: '20px', 
-            borderRadius: '10px', 
-            marginBottom: '20px',
-            border: '2px solid #3b82f6'
+          <div className="pool-info-card" style={{ 
+            borderColor: '#3b82f6',
+            borderWidth: '2px'
           }}>
-            <h3 style={{ color: '#1e40af', marginBottom: '15px' }}>👨‍💻 Geliştirici Paneli</h3>
+            <h3 style={{ color: '#1e40af', marginBottom: '16px', fontSize: '1.15rem', fontWeight: '700' }}>👨‍💻 Geliştirici Paneli</h3>
             
-            <div style={{ marginBottom: '15px' }}>
-              <div style={{ fontSize: '0.9rem', color: '#1e3a8a', marginBottom: '8px' }}>
-                <strong>Faucet Bakiyeleri:</strong>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.95rem', color: '#1e3a8a', marginBottom: '10px', fontWeight: '600' }}>
+                Faucet Bakiyeleri:
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#1e40af' }}>
-                <div>tUSDC: <strong>{parseFloat(faucetBalances.usdc).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
-                <div>tUSDT: <strong>{parseFloat(faucetBalances.usdt).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
-                <div>tUSDY: <strong>{parseFloat(faucetBalances.usdy).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
+              <div style={{ fontSize: '0.9rem', color: '#1e40af', lineHeight: '1.8' }}>
+                <div>tUSDC: <strong style={{ color: '#6366f1', fontSize: '1.05rem' }}>{parseFloat(faucetBalances.usdc).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
+                <div>tUSDT: <strong style={{ color: '#6366f1', fontSize: '1.05rem' }}>{parseFloat(faucetBalances.usdt).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
+                <div>tUSDY: <strong style={{ color: '#6366f1', fontSize: '1.05rem' }}>{parseFloat(faucetBalances.usdy).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
               </div>
             </div>
 
             <button 
               onClick={refillFaucet}
               disabled={refillLoading}
+              className="btn"
               style={{
-                width: '100%',
-                background: refillLoading 
-                  ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'
-                  : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                cursor: refillLoading ? 'not-allowed' : 'pointer',
-                marginTop: '10px'
+                marginTop: '8px'
               }}
             >
               {refillLoading ? '⏳ Dolduruluyor...' : '💰 Faucet Doldur (5M Her Token)'}
@@ -318,12 +309,11 @@ function FaucetPanel({ contracts, account }) {
             onClick={claimTokens}
             disabled={loading || !account || (!canClaim && !isDeveloper)}
             style={{ 
-              background: canClaim 
+              background: (canClaim || isDeveloper)
                 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                 : 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)',
-              fontSize: '1.2rem',
-              padding: '15px 30px',
-              cursor: canClaim ? 'pointer' : 'not-allowed'
+              fontSize: '1.1rem',
+              padding: '16px 32px'
             }}
           >
             {loading ? '⏳ Token Alınıyor...' : 
@@ -334,8 +324,17 @@ function FaucetPanel({ contracts, account }) {
           </button>
         </div>
 
-        <div style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
-          <p>💡 Her 24 saatte bir token alabilirsiniz. Faucet kontratı Arc Testnet'te deploy edildi.</p>
+        <div style={{ 
+          marginTop: '24px', 
+          fontSize: '0.9rem', 
+          color: '#64748b', 
+          textAlign: 'center',
+          padding: '16px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <p style={{ margin: 0, fontWeight: '500' }}>💡 Her 24 saatte bir token alabilirsiniz. Faucet kontratı Arc Testnet'te deploy edildi.</p>
         </div>
       </div>
     </div>

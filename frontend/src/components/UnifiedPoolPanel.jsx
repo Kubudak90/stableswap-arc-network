@@ -139,9 +139,10 @@ function UnifiedPoolPanel({ contracts, account }) {
         const amount0Wei = ethers.parseUnits(amount0, 6)
         const amount1Wei = ethers.parseUnits(amount1, 6)
         
-        const swapAddress = "0xC8B54F9085FCA8F45cc461002A8bd381D1240a47" // StableSwap (new)
+        // Get swap contract address dynamically
+        const swapAddress = await contracts.swap.getAddress()
         
-        console.log("Approving tokens...")
+        console.log("Approving tokens to:", swapAddress)
         const approveTx0 = await contracts.token0.approve(swapAddress, amount0Wei)
         await approveTx0.wait()
         
@@ -178,9 +179,10 @@ function UnifiedPoolPanel({ contracts, account }) {
         const amount1Wei = ethers.parseUnits(amount1_3, 6)
         const amount2Wei = ethers.parseUnits(amount2_3, 6)
         
-        const swapAddress = "0x34a0d6A10f26A31Ca2f7F71d4eA4B76F1Cbc2806" // StableSwap3Pool (new)
+        // Get swap3Pool contract address dynamically
+        const swapAddress = await contracts.swap3Pool.getAddress()
         
-        console.log("Approving tokens...")
+        console.log("Approving tokens to:", swapAddress)
         const approveTx0 = await contracts.token0.approve(swapAddress, amount0Wei)
         await approveTx0.wait()
         

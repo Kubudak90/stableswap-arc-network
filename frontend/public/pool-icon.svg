@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Three horizontal wavy lines (water ripples) -->
+  <path d="M 3 9 Q 7 7, 11 9 T 19 9" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        fill="none" 
+        stroke-linecap="round"/>
+  <path d="M 3 12 Q 7 10, 11 12 T 19 12" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        fill="none" 
+        stroke-linecap="round"/>
+  <path d="M 3 15 Q 7 13, 11 15 T 19 15" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        fill="none" 
+        stroke-linecap="round"/>
+</svg>
+

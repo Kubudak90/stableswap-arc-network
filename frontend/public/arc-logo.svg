@@ -1,0 +1,36 @@
+<svg width="220" height="60" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circle divided by S-curve: Teal upper-left, Gray lower-right -->
+  
+  <!-- Full circle (gray base) -->
+  <circle cx="30" cy="30" r="20" fill="#4B5563"/>
+  
+  <!-- Teal upper-left crescent (above S-curve) -->
+  <!-- Using clipPath for the crescent shape -->
+  <defs>
+    <clipPath id="tealClip">
+      <path d="M 10 10 
+               L 50 10 
+               L 50 30 
+               Q 30 15 10 30 
+               Z"/>
+    </clipPath>
+    <clipPath id="grayClip">
+      <path d="M 10 30 
+               Q 30 15 50 30 
+               L 50 50 
+               L 10 50 
+               Z"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Apply teal color to upper section -->
+  <circle cx="30" cy="30" r="20" fill="#14B8A6" clip-path="url(#tealClip)"/>
+  
+  <!-- Gray lower section is already the base, but ensure it's clipped correctly -->
+  <circle cx="30" cy="30" r="20" fill="#374151" clip-path="url(#grayClip)"/>
+  
+  <!-- Text: ARC STABLE SWAP -->
+  <text x="70" y="18" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="white" letter-spacing="2px">ARC</text>
+  <text x="70" y="35" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="white" letter-spacing="2px">STABLE</text>
+  <text x="70" y="52" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="white" letter-spacing="2px">SWAP</text>
+</svg>

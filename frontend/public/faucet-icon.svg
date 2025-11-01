@@ -1,0 +1,24 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Faucet handle (horizontal bar at top) -->
+  <line x1="9" y1="5" x2="15" y2="5" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        stroke-linecap="round"/>
+  <!-- Vertical pipe -->
+  <line x1="12" y1="5" x2="12" y2="17" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        stroke-linecap="round"/>
+  <!-- Pipe end/outlet (horizontal bar) -->
+  <line x1="8" y1="17" x2="16" y2="17" 
+        stroke="#FFFFFF" 
+        stroke-width="2.5" 
+        stroke-linecap="round"/>
+  <!-- Water drop (teardrop shape) -->
+  <path d="M 12 17 
+           Q 12 18.5, 13.5 20 
+           Q 12 19.5, 10.5 20 
+           Q 12 18.5, 12 17 Z" 
+        fill="#FFFFFF"/>
+</svg>
+

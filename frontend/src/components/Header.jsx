@@ -70,8 +70,18 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
   return (
     <header className="header">
       <div className="container">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
-          <h1 style={{ margin: 0 }}>🔄 StableSwap AMM</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img 
+              src="/arc-logo.svg" 
+              alt="ARC STABLE SWAP" 
+              style={{ 
+                height: '50px', 
+                width: 'auto',
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))'
+              }} 
+            />
+          </div>
           <a 
             href="https://faucet.circle.com/" 
             target="_blank" 
@@ -83,23 +93,37 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
               opacity: 0.9,
               display: 'flex',
               alignItems: 'center',
-              gap: '5px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              transition: 'all 0.2s',
-              border: '1px solid rgba(255,255,255,0.2)'
+              gap: '6px',
+              padding: '6px 10px',
+              borderRadius: '8px',
+              transition: 'all 0.3s ease',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(39, 117, 202, 0.1)'
             }}
             title="Arc Network USDC Faucet - Circle"
             onMouseEnter={(e) => {
-              e.target.style.opacity = '1'
-              e.target.style.background = 'rgba(255,255,255,0.1)'
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.background = 'rgba(39, 117, 202, 0.2)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 117, 202, 0.3)'
             }}
             onMouseLeave={(e) => {
-              e.target.style.opacity = '0.9'
-              e.target.style.background = 'transparent'
+              e.currentTarget.style.opacity = '0.9'
+              e.currentTarget.style.background = 'rgba(39, 117, 202, 0.1)'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = 'none'
             }}
           >
-            🚰 USDC Faucet
+            <img 
+              src="/circle-usdc-icon.svg" 
+              alt="Circle" 
+              style={{ 
+                width: '20px', 
+                height: '20px',
+                filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))'
+              }} 
+            />
+            USDC Faucet
           </a>
         </div>
         <p>Arc Network üzerinde stabilcoin takası</p>
@@ -107,13 +131,16 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
         <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <nav className="header-nav">
             <Link to="/">
-              🔄 Swap
+              <img src="/swap-icon.svg" alt="Swap" style={{ width: '22px', height: '22px' }} />
+              Swap
             </Link>
             <Link to="/pool">
-              💧 Pool
+              <img src="/pool-icon.svg" alt="Pool" style={{ width: '22px', height: '22px' }} />
+              Pool
             </Link>
             <Link to="/faucet">
-              🚰 Faucet
+              <img src="/faucet-icon.svg" alt="Faucet" style={{ width: '22px', height: '22px' }} />
+              Faucet
             </Link>
           </nav>
           

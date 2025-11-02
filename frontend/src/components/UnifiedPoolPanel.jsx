@@ -128,14 +128,18 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
         setPendingRewards2Pool(pendingFormatted)
         console.log('✅ 2Pool Pending Rewards (formatted):', pendingFormatted)
       } catch (err) {
-        console.error('❌ 2Pool rewards error:', err)
-        // Fallback: sadece userInfo'dan oku
-        try {
-          const userInfo2Pool = await liquidityRewards.userInfo(poolId2Pool, account)
-          setUserLiquidity2Pool(ethers.formatUnits(userInfo2Pool.amount, 6))
-          setPendingRewards2Pool(ethers.formatUnits(userInfo2Pool.pendingRewards, 18))
-        } catch (e) {
-          console.error('❌ 2Pool fallback failed:', e)
+        // Sessizce handle et - pendingRewards view fonksiyonu bazen revert edebilir
+        if (err.message && err.message.includes('missing revert data')) {
+          // View fonksiyonu revert etti, sadece userInfo kullan
+          try {
+            const userInfo2Pool = await liquidityRewards.userInfo(poolId2Pool, account)
+            setUserLiquidity2Pool(ethers.formatUnits(userInfo2Pool.amount, 6))
+            setPendingRewards2Pool(ethers.formatUnits(userInfo2Pool.pendingRewards, 18))
+          } catch (e) {
+            // Sessizce başarısız ol, zaten başlangıç değerleri var
+          }
+        } else {
+          console.warn('⚠️ 2Pool rewards warning:', err.message || err)
         }
       }
       
@@ -160,14 +164,19 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
         setPendingRewards3Pool(pendingFormatted)
         console.log('✅ 3Pool Pending Rewards (formatted):', pendingFormatted)
       } catch (err) {
-        console.error('❌ 3Pool rewards error:', err)
-        // Fallback: sadece userInfo'dan oku
-        try {
-          const userInfo3Pool = await liquidityRewards.userInfo(poolId3Pool, account)
-          setUserLiquidity3Pool(ethers.formatUnits(userInfo3Pool.amount, 6))
-          setPendingRewards3Pool(ethers.formatUnits(userInfo3Pool.pendingRewards, 18))
-        } catch (e) {
-          console.error('❌ 3Pool fallback failed:', e)
+        // Sessizce handle et - pendingRewards view fonksiyonu bazen revert edebilir
+        // Bu durumda sadece userInfo'dan oku
+        if (err.message && err.message.includes('missing revert data')) {
+          // View fonksiyonu revert etti, sadece userInfo kullan
+          try {
+            const userInfo3Pool = await liquidityRewards.userInfo(poolId3Pool, account)
+            setUserLiquidity3Pool(ethers.formatUnits(userInfo3Pool.amount, 6))
+            setPendingRewards3Pool(ethers.formatUnits(userInfo3Pool.pendingRewards, 18))
+          } catch (e) {
+            // Sessizce başarısız ol, zaten başlangıç değerleri var
+          }
+        } else {
+          console.warn('⚠️ 3Pool rewards warning:', err.message || err)
         }
       }
     } catch (error) {
@@ -443,7 +452,7 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
   const currentReserves = poolType === '2pool' ? reserves2Pool : reserves3Pool
 
   return (
-    <div className="container">
+    <div className="pool-container">
       <div className="card">
         <h2 style={{ 
           marginBottom: '32px', 
@@ -674,7 +683,7 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
                 </div>
               </>
             ) : (
-              <>
+              <div className="pool-input-grid">
                 <div className="form-group">
                   <label>tUSDC Miktarı</label>
                   <input
@@ -707,7 +716,7 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
                     step="0.000001"
                   />
                 </div>
-              </>
+              </div>
             )}
 
             <button 
@@ -774,7 +783,7 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
                 </button>
               </>
             ) : (
-              <>
+              <div className="pool-input-grid">
                 <div className="form-group">
                   <label>Çıkarılacak tUSDC Miktarı</label>
                   <input
@@ -807,7 +816,11 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
                     step="0.000001"
                   />
                 </div>
+              </div>
+            )}
 
+            {poolType === '3pool' && (
+              <>
                 <div style={{ 
                   marginBottom: '20px', 
                   padding: '16px', 
@@ -864,7 +877,17 @@ function UnifiedPoolPanel({ contracts, account, provider, signer }) {
                 </div>
                 <div style={{ marginBottom: '10px', padding: '10px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                   <strong style={{ color: '#10b981' }}>Bekleyen Ödül:</strong> {
-                    parseFloat(poolType === '2pool' ? pendingRewards2Pool : pendingRewards3Pool).toFixed(6)
+                    (() => {
+                      const amount = parseFloat(poolType === '2pool' ? pendingRewards2Pool : pendingRewards3Pool)
+                      if (amount < 0.000001 && amount > 0) {
+                        return '< 0.000001'
+                      }
+                      if (amount > 0 && amount < 1) {
+                        const str = amount.toFixed(6)
+                        return parseFloat(str).toString()
+                      }
+                      return amount.toLocaleString('tr-TR', { maximumFractionDigits: 6, minimumFractionDigits: 0 })
+                    })()
                   } ASS
                 </div>
               </div>

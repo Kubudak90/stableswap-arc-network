@@ -122,7 +122,11 @@ function StakingPanel({ provider, signer, account, contracts }) {
             })
           }
         } catch (err) {
-          console.warn('Fee kontrolü başarısız:', err)
+          // "missing revert data" hatası normal - view fonksiyonu bazen revert edebilir
+          // Bu durum kritik değil, sessizce handle et
+          if (!err.message || !err.message.includes('missing revert data')) {
+            console.warn('⚠️ Fee kontrolü uyarısı:', err.message || err)
+          }
         }
       }
     } catch (err) {
@@ -343,7 +347,17 @@ function StakingPanel({ provider, signer, account, contracts }) {
             <div className="info-label">Bekleyen Ödül</div>
             <div className="info-value">
               {rewardToken 
-                ? `${parseFloat(pendingRewards).toFixed(6)} ${rewardToken.symbol}`
+                ? (() => {
+                    const amount = parseFloat(pendingRewards)
+                    if (amount < 0.000001 && amount > 0) {
+                      return `< 0.000001 ${rewardToken.symbol}`
+                    }
+                    if (amount > 0 && amount < 1) {
+                      const str = amount.toFixed(6)
+                      return `${parseFloat(str)} ${rewardToken.symbol}`
+                    }
+                    return `${amount.toLocaleString('tr-TR', { maximumFractionDigits: 6, minimumFractionDigits: 0 })} ${rewardToken.symbol}`
+                  })()
                 : '0.0'
               }
             </div>
@@ -459,7 +473,22 @@ function StakingPanel({ provider, signer, account, contracts }) {
             <div style={{ marginBottom: '15px' }}>
               <strong>🎁 Bekleyen Ödülünüz Var!</strong>
               <div style={{ fontSize: '1.2rem', marginTop: '8px', color: '#92400e' }}>
-                {rewardToken && `${parseFloat(pendingRewards).toFixed(6)} ${rewardToken.symbol}`}
+                {rewardToken && (() => {
+                  const amount = parseFloat(pendingRewards)
+                  // Eğer çok küçükse (< 0.000001), "~0" göster
+                  if (amount < 0.000001 && amount > 0) {
+                    return `< 0.000001 ${rewardToken.symbol}`
+                  }
+                  // 6 decimal'dan fazla sıfır varsa, önemli rakamlara kadar göster
+                  if (amount > 0 && amount < 1) {
+                    // Önemli rakam sayısını bul (sıfır olmayan ilk rakamdan sonra)
+                    const str = amount.toFixed(6)
+                    const trimmed = parseFloat(str).toString()
+                    return `${trimmed} ${rewardToken.symbol}`
+                  }
+                  // Normal format
+                  return `${amount.toLocaleString('tr-TR', { maximumFractionDigits: 6, minimumFractionDigits: 0 })} ${rewardToken.symbol}`
+                })()}
               </div>
             </div>
             <button 

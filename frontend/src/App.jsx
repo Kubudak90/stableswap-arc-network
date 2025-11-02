@@ -22,7 +22,7 @@ const CONTRACTS = {
   // ASS Token Ecosystem
   assToken: "0xe56151c58780ebB54e32257B3426a6Bc15e46C3C",
   liquidityRewards: "0x05B4c54211D577295FBE52E9E84EED0F5F6bEC66", // Updated - anında ödül birikimi
-  stakingContract: "0x9F0B3eeEB31a0f2aC47c100aB0b286b8f8121F39", // Updated StakingContract (connected to new FeeDistributor)
+  stakingContract: "0x57Ca9Fff43CeFe73413C07e9a45453F5eC8D5bBD", // Updated StakingContract (partial claim support - claims available balance even if pending is higher)
   feeDistributor: "0x9d5EC576F616Dc30CB8e743a6D5334F376ff8D58" // Updated FeeDistributor (fixed distributeFees - uses actual balance)
 }
 

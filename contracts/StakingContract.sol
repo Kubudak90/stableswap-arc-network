@@ -97,11 +97,23 @@ contract StakingContract is Ownable {
         StakerInfo storage staker = stakers[msg.sender];
         uint256 pending = staker.pendingRewards;
         
-        if (pending > 0) {
-            staker.pendingRewards = 0;
-            rewardToken.safeTransfer(msg.sender, pending);
-            emit RewardClaimed(msg.sender, pending);
+        require(pending > 0, "StakingContract: No rewards to claim");
+        
+        // Kontratın balance'ını kontrol et
+        uint256 contractBalance = rewardToken.balanceOf(address(this));
+        
+        // Eğer kontrat yeterli balance'a sahip değilse, mevcut balance kadar transfer et
+        // (Bu durum fee dağıtımı eksik olduğunda olabilir)
+        uint256 transferAmount = pending;
+        if (contractBalance < pending) {
+            transferAmount = contractBalance;
         }
+        
+        require(transferAmount > 0, "StakingContract: Insufficient reward balance");
+        
+        staker.pendingRewards = pending - transferAmount;
+        rewardToken.safeTransfer(msg.sender, transferAmount);
+        emit RewardClaimed(msg.sender, transferAmount);
     }
 
     /**
@@ -139,13 +151,18 @@ contract StakingContract is Ownable {
         if (staker.stakedAmount == 0) return;
         
         uint256 earned = (staker.stakedAmount * rewardPerTokenStored) / 1e18;
-        uint256 newRewards = earned - staker.rewardDebt;
         
-        if (newRewards > 0) {
-            staker.pendingRewards += newRewards;
+        // Underflow kontrolü - eğer earned < rewardDebt ise newRewards = 0
+        uint256 newRewards = 0;
+        if (earned > staker.rewardDebt) {
+            newRewards = earned - staker.rewardDebt;
+            if (newRewards > 0) {
+                staker.pendingRewards += newRewards;
+            }
         }
         
-        staker.rewardDebt = (staker.stakedAmount * rewardPerTokenStored) / 1e18;
+        // rewardDebt'ı güncelle (her zaman güncelle, underflow durumunda bile)
+        staker.rewardDebt = earned;
     }
 
     /**

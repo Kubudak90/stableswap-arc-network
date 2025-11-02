@@ -7,17 +7,23 @@ import Pool3Panel from './components/Pool3Panel'
 import UnifiedSwapPanel from './components/UnifiedSwapPanel'
 import UnifiedPoolPanel from './components/UnifiedPoolPanel'
 import FaucetPanel from './components/FaucetPanel'
+import StakingPanel from './components/StakingPanel'
 import Header from './components/Header'
 import { ethers } from 'ethers'
 
-// Deployed contract addresses (NEW - with mintable tokens)
+// Deployed contract addresses (NEW - Fee-aware swap contracts)
 const CONTRACTS = {
   testUSDC: "0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733", // TestUSDCV2 (mintable)
   testUSDT: "0x787804d1f98F4Da65C6de63AaA00906A8C6868F3", // TestUSDTV2 (mintable)
   testUSDY: "0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a", // TestUSDYV2 (mintable)
-  swap: "0xC4d8543f5b879eDe6885c43647E32e67Ca6DFC87", // StableSwap V2 - 1:1 oran (2 tokens, with removeLiquidity)
-  swap3Pool: "0x34a0d6A10f26A31Ca2f7F71d4eA4B76F1Cbc2806", // StableSwap3Pool - 1:1:1 oran (3 tokens)
-  faucetV3: "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0" // TestTokenFaucetV3 (with developer support)
+  swap: "0x5d4D4C908D7dfb882d5a24af713158FC805e410B", // StableSwap V2 - Fee-aware 2Pool (with FeeDistributor)
+  swap3Pool: "0x16d14659A50fFB31571e4e7ac4417C1Ff22bFc70", // StableSwap3Pool - Fee-aware 3Pool (with FeeDistributor)
+  faucetV3: "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0", // TestTokenFaucetV3 (with developer support)
+  // ASS Token Ecosystem
+  assToken: "0xe56151c58780ebB54e32257B3426a6Bc15e46C3C",
+  liquidityRewards: "0x05B4c54211D577295FBE52E9E84EED0F5F6bEC66", // Updated - anında ödül birikimi
+  stakingContract: "0x9F0B3eeEB31a0f2aC47c100aB0b286b8f8121F39", // Updated StakingContract (connected to new FeeDistributor)
+  feeDistributor: "0x9d5EC576F616Dc30CB8e743a6D5334F376ff8D58" // Updated FeeDistributor (fixed distributeFees - uses actual balance)
 }
 
 // StableSwap ABI (2 tokens)
@@ -53,6 +59,24 @@ const ERC20_ABI = [
   "function symbol() view returns (string)"
 ]
 
+// LiquidityRewards ABI
+const LIQUIDITY_REWARDS_ABI = [
+  "function deposit(uint256 poolId, uint256 amount) external",
+  "function withdraw(uint256 poolId, uint256 amount) external",
+  "function claimRewards(uint256 poolId) external",
+  "function pendingRewards(uint256 poolId, address user) external view returns (uint256)",
+  "function userInfo(uint256 poolId, address user) external view returns (uint256 amount, uint256 rewardDebt, uint256 pendingRewards)",
+  "function poolInfo(uint256 poolId) external view returns (address poolContract, uint256 allocPoint, uint256 lastRewardTime, uint256 accRewardPerShare, bool isActive)"
+]
+
+// FeeDistributor ABI
+const FEE_DISTRIBUTOR_ABI = [
+  "function distributeFees(address token) external",
+  "function collectedFees(address swapContract) external view returns (uint256)",
+  "function swapContracts(uint256) external view returns (address)",
+  "function stakingContract() external view returns (address)"
+]
+
 function App() {
   const [provider, setProvider] = useState(null)
   const [signer, setSigner] = useState(null)
@@ -78,13 +102,21 @@ function App() {
               const token0Contract = new ethers.Contract(CONTRACTS.testUSDC, ERC20_ABI, signer)
               const token1Contract = new ethers.Contract(CONTRACTS.testUSDT, ERC20_ABI, signer)
               const token2Contract = new ethers.Contract(CONTRACTS.testUSDY, ERC20_ABI, signer)
+              const liquidityRewardsContract = new ethers.Contract(CONTRACTS.liquidityRewards, LIQUIDITY_REWARDS_ABI, signer)
+              const assTokenContract = new ethers.Contract(CONTRACTS.assToken, ERC20_ABI, signer)
+              const stakingContractInstance = new ethers.Contract(CONTRACTS.stakingContract, ["function stake(uint256 amount) external", "function unstake(uint256 amount) external", "function claimRewards() external", "function getPendingRewards(address user) external view returns (uint256)", "function stakers(address user) external view returns (uint256 stakedAmount, uint256 rewardDebt, uint256 pendingRewards)", "function totalStaked() external view returns (uint256)", "function rewardToken() external view returns (address)"], signer)
+              const feeDistributorContract = new ethers.Contract(CONTRACTS.feeDistributor, FEE_DISTRIBUTOR_ABI, signer)
 
               setContracts({
                 swap: swapContract,
                 swap3Pool: swap3PoolContract,
                 token0: token0Contract,
                 token1: token1Contract,
-                token2: token2Contract
+                token2: token2Contract,
+                liquidityRewards: liquidityRewardsContract,
+                assToken: assTokenContract,
+                stakingContract: stakingContractInstance,
+                feeDistributor: feeDistributorContract
               })
             })
           }
@@ -162,13 +194,21 @@ function App() {
         const token0Contract = new ethers.Contract(CONTRACTS.testUSDC, ERC20_ABI, signer)
         const token1Contract = new ethers.Contract(CONTRACTS.testUSDT, ERC20_ABI, signer)
         const token2Contract = new ethers.Contract(CONTRACTS.testUSDY, ERC20_ABI, signer)
+        const liquidityRewardsContract = new ethers.Contract(CONTRACTS.liquidityRewards, LIQUIDITY_REWARDS_ABI, signer)
+        const assTokenContract = new ethers.Contract(CONTRACTS.assToken, ERC20_ABI, signer)
+        const stakingContractInstance = new ethers.Contract(CONTRACTS.stakingContract, ["function stake(uint256 amount) external", "function unstake(uint256 amount) external", "function claimRewards() external", "function getPendingRewards(address user) external view returns (uint256)", "function stakers(address user) external view returns (uint256 stakedAmount, uint256 rewardDebt, uint256 pendingRewards)", "function totalStaked() external view returns (uint256)", "function rewardToken() external view returns (address)"], signer)
+        const feeDistributorContract = new ethers.Contract(CONTRACTS.feeDistributor, FEE_DISTRIBUTOR_ABI, signer)
 
         setContracts({
           swap: swapContract,
           swap3Pool: swap3PoolContract,
           token0: token0Contract,
           token1: token1Contract,
-          token2: token2Contract
+          token2: token2Contract,
+          liquidityRewards: liquidityRewardsContract,
+          assToken: assTokenContract,
+          stakingContract: stakingContractInstance,
+          feeDistributor: feeDistributorContract
         })
 
         console.log('Contracts initialized')
@@ -270,8 +310,9 @@ function App() {
           currentChainId={currentChainId}
         />
         <Routes>
-          <Route path="/" element={<UnifiedSwapPanel contracts={contracts} account={account} />} />
-          <Route path="/pool" element={<UnifiedPoolPanel contracts={contracts} account={account} />} />
+          <Route path="/" element={<UnifiedSwapPanel contracts={contracts} account={account} provider={provider} signer={signer} />} />
+          <Route path="/pool" element={<UnifiedPoolPanel contracts={contracts} account={account} provider={provider} signer={signer} />} />
+          <Route path="/staking" element={<StakingPanel contracts={contracts} account={account} provider={provider} signer={signer} />} />
           <Route path="/faucet" element={<FaucetPanel contracts={contracts} account={account} />} />
           {/* Legacy routes - kept for backwards compatibility */}
           <Route path="/pool-old-2" element={<PoolPanel contracts={contracts} account={account} />} />

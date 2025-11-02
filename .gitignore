@@ -73,5 +73,7 @@ faucet-v2-addresses.json
 faucet-v3-addresses.json
 faucet-v3-new-addresses.json
 new-contracts-addresses.json
+ass-token-addresses.json
+new-swap-addresses.json
 vercel.json
 .vercel/

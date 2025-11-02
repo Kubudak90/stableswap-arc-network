@@ -138,6 +138,14 @@ function Header({ account, connectWallet, disconnectWallet, contracts, currentCh
               <img src="/pool-icon.svg" alt="Pool" style={{ width: '22px', height: '22px' }} />
               Pool
             </Link>
+            <Link to="/staking">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 0 2px rgba(20, 184, 166, 0.5))' }}>
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Staking
+            </Link>
             <Link to="/faucet">
               <img src="/faucet-icon.svg" alt="Faucet" style={{ width: '22px', height: '22px' }} />
               Faucet

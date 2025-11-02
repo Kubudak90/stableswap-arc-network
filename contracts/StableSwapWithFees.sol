@@ -6,10 +6,10 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
- * @title StableSwap
- * @notice Basit stabilcoin swap - 1:1 oranı korur, fee distribution entegre
+ * @title StableSwapWithFees
+ * @notice Fee distribution entegrasyonlu StableSwap
  */
-contract StableSwap {
+contract StableSwapWithFees {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token0;
@@ -32,16 +32,15 @@ contract StableSwap {
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
     }
-    
+
     /**
      * @notice Fee distributor'ı ayarla
      */
     function setFeeDistributor(address _feeDistributor) external {
         // İlk kez ayarlanıyorsa herkes ayarlayabilir, sonra sadece owner
-        // Şimdilik basit tutuyoruz
-        address oldDistributor = address(feeDistributor);
+        // Şimdilik basit tutuyoruz, gerekirse Ownable eklenebilir
         feeDistributor = FeeDistributor(_feeDistributor);
-        emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
+        emit FeeDistributorUpdated(address(0), _feeDistributor);
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external {
@@ -129,7 +128,9 @@ contract StableSwap {
     function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256) {
         if (amountIn == 0) return 0;
         
-        // Stabilcoin için 1:1 oran + küçük fee
-        return amountIn * (BPS - FEE_BPS) / BPS;
+        // Stabilcoin için 1:1 oran + fee
+        uint256 fee = (amountIn * FEE_BPS) / BPS;
+        return amountIn - fee;
     }
 }
+

@@ -3,10 +3,11 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
  * @title StableSwap3Pool
- * @notice 3 token'lı stabilcoin swap - 1:1:1 oranı korur
+ * @notice 3 token'lı stabilcoin swap - 1:1:1 oranı korur, fee distribution entegre
  */
 contract StableSwap3Pool {
     using SafeERC20 for IERC20;
@@ -21,15 +22,27 @@ contract StableSwap3Pool {
     
     uint256 public constant FEE_BPS = 4; // 0.04% fee (4 bps)
     uint256 public constant BPS = 10000;
+    
+    FeeDistributor public feeDistributor;
 
     event Swap(address indexed user, uint8 tokenIn, uint8 tokenOut, uint256 amountIn, uint256 amountOut);
     event AddLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 amount2);
     event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 amount2);
+    event FeeDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
 
     constructor(address _token0, address _token1, address _token2) {
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
         token2 = IERC20(_token2);
+    }
+    
+    /**
+     * @notice Fee distributor'ı ayarla
+     */
+    function setFeeDistributor(address _feeDistributor) external {
+        address oldDistributor = address(feeDistributor);
+        feeDistributor = FeeDistributor(_feeDistributor);
+        emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external {
@@ -100,8 +113,12 @@ contract StableSwap3Pool {
         // Transfer input token
         inputToken.safeTransferFrom(msg.sender, address(this), amountIn);
 
-        // Stabilcoin için 1:1:1 oran + küçük fee
-        amountOut = amountIn * (BPS - FEE_BPS) / BPS;
+        // Fee hesapla
+        uint256 fee = (amountIn * FEE_BPS) / BPS;
+        uint256 amountAfterFee = amountIn - fee;
+        
+        // Stabilcoin için 1:1:1 oran
+        amountOut = amountAfterFee;
 
         require(amountOut > 0, "Insufficient output");
         require(outputReserve >= amountOut, "Insufficient liquidity");
@@ -121,6 +138,12 @@ contract StableSwap3Pool {
             reserve1 -= amountOut;
         } else {
             reserve2 -= amountOut;
+        }
+        
+        // Fee'yi fee distributor'a gönder
+        if (fee > 0 && address(feeDistributor) != address(0)) {
+            inputToken.safeTransfer(address(feeDistributor), fee);
+            feeDistributor.collectFee(address(inputToken), fee);
         }
 
         // Transfer output token

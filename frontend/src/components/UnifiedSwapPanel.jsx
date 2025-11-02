@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 
-function UnifiedSwapPanel({ contracts, account }) {
+function UnifiedSwapPanel({ contracts, account, provider, signer }) {
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState('')
   const [tokenInIndex, setTokenInIndex] = useState(0) // 0: tUSDC, 1: tUSDT, 2: tUSDY
@@ -94,28 +94,108 @@ function UnifiedSwapPanel({ contracts, account }) {
     
     try {
       const amountInWei = ethers.parseUnits(amountIn, 6)
-      const swapAddress = use3Pool 
-        ? "0x34a0d6A10f26A31Ca2f7F71d4eA4B76F1Cbc2806" // StableSwap3Pool (new)
-        : "0xC8B54F9085FCA8F45cc461002A8bd381D1240a47" // StableSwap (new)
+      
+      // Recalculate pool type inside function to ensure it's current
+      const currentPoolType = getPoolType()
+      const use3PoolCurrent = currentPoolType === '3Pool'
+      
+      console.log("Swap info:", {
+        tokenInIndex,
+        tokenOutIndex,
+        poolType: currentPoolType,
+        use3Pool: use3PoolCurrent
+      })
+      
+      // Get correct swap contract addresses dynamically
+      let swapAddress
+      let swapContract
+      
+      if (use3PoolCurrent) {
+        // 3Pool: Use new fee-aware contract
+        if (!contracts.swap3Pool) {
+          throw new Error('3Pool kontratı bulunamadı')
+        }
+        swapAddress = await contracts.swap3Pool.getAddress()
+        swapContract = contracts.swap3Pool
+      } else {
+        // 2Pool: Use new fee-aware contract
+        if (!contracts.swap) {
+          throw new Error('2Pool kontratı bulunamadı')
+        }
+        swapAddress = await contracts.swap.getAddress()
+        swapContract = contracts.swap
+      }
+      
+      console.log("Using swap contract:", swapAddress, "Pool type:", currentPoolType)
+      
+      // Check reserves before swap
+      if (!use3PoolCurrent && contracts.swap) {
+        try {
+          const [reserve0, reserve1] = await contracts.swap.getReserves()
+          console.log("📊 Current reserves:", {
+            reserve0: ethers.formatUnits(reserve0, 6),
+            reserve1: ethers.formatUnits(reserve1, 6)
+          })
+          
+          // Check if output is possible
+          const zeroForOne = tokenInIndex === 0 && tokenOutIndex === 1
+          const requiredReserve = zeroForOne ? reserve1 : reserve0
+          const amountOutWei = amountInWei * 9996n / 10000n // 0.04% fee
+          
+          console.log("💧 Required reserve for output:", ethers.formatUnits(requiredReserve, 6))
+          console.log("💧 Expected output amount:", ethers.formatUnits(amountOutWei, 6))
+          
+          if (requiredReserve < amountOutWei) {
+            throw new Error(`Yetersiz likidite! Gereken: ${ethers.formatUnits(amountOutWei, 6)}, Mevcut: ${ethers.formatUnits(requiredReserve, 6)}`)
+          }
+        } catch (err) {
+          console.warn("Reserve check error (continuing):", err)
+        }
+      }
       
       // Approve token
       const tokenContract = tokenContracts[tokenInIndex]
-      console.log("Approving token...")
-      const approveTx = await tokenContract.approve(swapAddress, amountInWei)
-      await approveTx.wait()
-      console.log("Token approved")
+      if (!tokenContract) {
+        throw new Error('Token kontratı bulunamadı')
+      }
+      
+      // Check current allowance
+      const currentAllowance = await tokenContract.allowance(account, swapAddress)
+      console.log("🔍 Current allowance:", ethers.formatUnits(currentAllowance, 6))
+      
+      if (currentAllowance < amountInWei) {
+        console.log("🔐 Approving token to:", swapAddress)
+        const approveTx = await tokenContract.approve(swapAddress, amountInWei)
+        await approveTx.wait()
+        console.log("✅ Token approved")
+      } else {
+        console.log("✅ Token already approved")
+      }
       
       // Execute swap
       let swapTx
-      if (use3Pool) {
-        swapTx = await contracts.swap3Pool.swap(tokenInIndex, tokenOutIndex, amountInWei)
+      if (use3PoolCurrent) {
+        // 3Pool: swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn)
+        console.log("Calling 3Pool swap:", tokenInIndex, tokenOutIndex, amountInWei.toString())
+        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei)
       } else {
-        // For 2Pool: token0 (tUSDC) = index 0, token1 (tUSDT) = index 1
+        // 2Pool: swap(bool zeroForOne, uint256 amountIn)
+        // zeroForOne = true means token0 -> token1 (tUSDC -> tUSDT)
+        // zeroForOne = false means token1 -> token0 (tUSDT -> tUSDC)
         const zeroForOne = tokenInIndex === 0 && tokenOutIndex === 1
-        swapTx = await contracts.swap.swap(zeroForOne, amountInWei)
+        console.log("🔄 Calling 2Pool swap:", {
+          zeroForOne,
+          amountIn: amountInWei.toString(),
+          amountInFormatted: ethers.formatUnits(amountInWei, 6),
+          tokenIn: tokenNames[tokenInIndex],
+          tokenOut: tokenNames[tokenOutIndex]
+        })
+        swapTx = await swapContract.swap(zeroForOne, amountInWei)
       }
       
+      console.log("⏳ Waiting for swap transaction...")
       await swapTx.wait()
+      console.log("✅ Swap transaction confirmed")
       
       setSuccess(`✅ Başarılı! ${amountIn} ${tokenNames[tokenInIndex]} → ${amountOut} ${tokenNames[tokenOutIndex]}`)
       setAmountIn('')

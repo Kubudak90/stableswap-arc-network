@@ -23,6 +23,10 @@ contract Router {
         uint256 minLpOut
     ) external returns (uint256 lpOut) {
         IStableSwapPool P = IStableSwapPool(pool);
+        // KRİTİK DÜZELTME: Kullanıcıdan token'ları router'a çek
+        IERC20(P.token0()).safeTransferFrom(msg.sender, address(this), amount0);
+        IERC20(P.token1()).safeTransferFrom(msg.sender, address(this), amount1);
+        // Pool'a approve et
         IERC20(P.token0()).safeIncreaseAllowance(pool, amount0);
         IERC20(P.token1()).safeIncreaseAllowance(pool, amount1);
         lpOut = P.addLiquidity(amount0, amount1, minLpOut);
@@ -36,6 +40,9 @@ contract Router {
     ) external returns (uint256 amt0, uint256 amt1) {
         IStableSwapPool P = IStableSwapPool(pool);
         address lp = P.lp();
+        // KRİTİK DÜZELTME: Kullanıcıdan LP token'ı router'a çek
+        IERC20(lp).safeTransferFrom(msg.sender, address(this), lpAmount);
+        // Pool'a approve et
         IERC20(lp).safeIncreaseAllowance(pool, lpAmount);
         (amt0, amt1) = P.removeLiquidity(lpAmount, min0, min1);
     }
@@ -48,6 +55,9 @@ contract Router {
     ) external returns (uint256 amountOut) {
         IStableSwapPool P = IStableSwapPool(pool);
         address inToken = zeroForOne ? P.token0() : P.token1();
+        // KRİTİK DÜZELTME: Kullanıcıdan token'ı router'a çek
+        IERC20(inToken).safeTransferFrom(msg.sender, address(this), amountIn);
+        // Pool'a approve et
         IERC20(inToken).safeIncreaseAllowance(pool, amountIn);
         amountOut = P.swap(zeroForOne, amountIn, minAmountOut);
     }

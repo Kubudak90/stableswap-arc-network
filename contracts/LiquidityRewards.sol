@@ -125,8 +125,10 @@ contract LiquidityRewards is Ownable {
         // Mevcut likiditesi varsa bekleyen ödülleri hesapla ve biriktir
         if (user.amount > 0) {
             // Bekleyen ödülleri hesapla (likidite miktarına göre proportiyonel)
-            uint256 pending = (user.amount * pool.accRewardPerShare) / 1e18 - user.rewardDebt;
-            if (pending > 0) {
+            uint256 accReward = (user.amount * pool.accRewardPerShare) / 1e18;
+            // DÜZELTME: Underflow kontrolü ekle
+            if (accReward > user.rewardDebt) {
+                uint256 pending = accReward - user.rewardDebt;
                 user.pendingRewards += pending;
             }
         }
@@ -156,8 +158,10 @@ contract LiquidityRewards is Ownable {
         require(user.amount >= amount, "Insufficient amount");
         
         // Bekleyen ödülleri hesapla
-        uint256 pending = (user.amount * pool.accRewardPerShare) / 1e18 - user.rewardDebt;
-        if (pending > 0) {
+        uint256 accReward = (user.amount * pool.accRewardPerShare) / 1e18;
+        // DÜZELTME: Underflow kontrolü ekle
+        if (accReward > user.rewardDebt) {
+            uint256 pending = accReward - user.rewardDebt;
             user.pendingRewards += pending;
         }
         
@@ -181,8 +185,10 @@ contract LiquidityRewards is Ownable {
         UserInfo storage user = userInfo[poolId][msg.sender];
         
         // Bekleyen ödülleri hesapla
-        uint256 pending = (user.amount * pool.accRewardPerShare) / 1e18 - user.rewardDebt;
-        if (pending > 0) {
+        uint256 accReward = (user.amount * pool.accRewardPerShare) / 1e18;
+        // DÜZELTME: Underflow kontrolü ekle
+        if (accReward > user.rewardDebt) {
+            uint256 pending = accReward - user.rewardDebt;
             user.pendingRewards += pending;
         }
         
@@ -220,6 +226,12 @@ contract LiquidityRewards is Ownable {
         
         // Geçen süre
         uint256 timeElapsed = block.timestamp - pool.lastRewardTime;
+        
+        // DÜZELTME: Division by zero kontrolü ekle
+        if (totalAllocPoint == 0) {
+            pool.lastRewardTime = block.timestamp;
+            return;
+        }
         
         // Bu pool için reward (emission schedule'a göre)
         // Allocation point'e göre pool'lara pay dağıtımı

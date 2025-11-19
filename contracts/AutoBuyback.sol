@@ -164,9 +164,14 @@ contract AutoBuyback is Ownable {
 
     /**
      * @notice ASS token yak (swap sonrası)
+     * @dev DÜZELTME: burn fonksiyonu sadece token sahibi tarafından çağrılabilir
+     * Kontrat önce token'a sahip olmalı, sonra burn edebilir
      */
     function burnASS(uint256 amount) internal {
         if (amount > 0) {
+            uint256 balance = assToken.balanceOf(address(this));
+            require(balance >= amount, "AutoBuyback: Insufficient ASS balance to burn");
+            // ERC20Burnable.burn sadece kendi balance'ını yakabilir
             assToken.burn(amount);
             totalBurned += amount;
         }

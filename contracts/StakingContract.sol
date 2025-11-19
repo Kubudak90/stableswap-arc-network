@@ -143,25 +143,27 @@ contract StakingContract is Ownable {
 
     /**
      * @notice Kullanıcının reward'larını güncelle
+     * @dev DÜZELTME: İlk stake durumunda da doğru çalışacak şekilde güncellendi
      */
     function updateRewards(address user) internal {
-        if (totalStaked == 0) return;
-        
         StakerInfo storage staker = stakers[user];
+        
+        // Eğer kullanıcının stake'i yoksa güncelleme yapma
         if (staker.stakedAmount == 0) return;
         
+        // Eğer toplam stake yoksa güncelleme yapma
+        if (totalStaked == 0) return;
+        
+        // Kullanıcının kazandığı reward'ı hesapla
         uint256 earned = (staker.stakedAmount * rewardPerTokenStored) / 1e18;
         
-        // Underflow kontrolü - eğer earned < rewardDebt ise newRewards = 0
-        uint256 newRewards = 0;
+        // Underflow kontrolü - eğer earned > rewardDebt ise yeni reward ekle
         if (earned > staker.rewardDebt) {
-            newRewards = earned - staker.rewardDebt;
-            if (newRewards > 0) {
-                staker.pendingRewards += newRewards;
-            }
+            uint256 newRewards = earned - staker.rewardDebt;
+            staker.pendingRewards += newRewards;
         }
         
-        // rewardDebt'ı güncelle (her zaman güncelle, underflow durumunda bile)
+        // rewardDebt'ı güncelle
         staker.rewardDebt = earned;
     }
 

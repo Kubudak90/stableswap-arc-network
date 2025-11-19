@@ -3,13 +3,15 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
  * @title StableSwap3Pool
  * @notice 3 token'lı stabilcoin swap - 1:1:1 oranı korur, fee distribution entegre
  */
-contract StableSwap3Pool {
+contract StableSwap3Pool is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token0; // tUSDC
@@ -30,16 +32,18 @@ contract StableSwap3Pool {
     event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 amount2);
     event FeeDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
 
-    constructor(address _token0, address _token1, address _token2) {
+    constructor(address _token0, address _token1, address _token2) Ownable(msg.sender) {
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
         token2 = IERC20(_token2);
     }
     
     /**
-     * @notice Fee distributor'ı ayarla
+     * @notice Fee distributor'ı ayarla (sadece owner)
+     * @dev KRİTİK GÜVENLİK DÜZELTMESİ: Access control eklendi
      */
-    function setFeeDistributor(address _feeDistributor) external {
+    function setFeeDistributor(address _feeDistributor) external onlyOwner {
+        require(_feeDistributor != address(0), "StableSwap3Pool: Invalid address");
         address oldDistributor = address(feeDistributor);
         feeDistributor = FeeDistributor(_feeDistributor);
         emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
@@ -57,7 +61,7 @@ contract StableSwap3Pool {
         emit AddLiquidity(msg.sender, amount0, amount1, amount2);
     }
 
-    function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external {
+    function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external nonReentrant {
         require(reserve0 >= amount0 && reserve1 >= amount1 && reserve2 >= amount2, "Insufficient liquidity");
         
         reserve0 -= amount0;
@@ -123,13 +127,14 @@ contract StableSwap3Pool {
         require(amountOut > 0, "Insufficient output");
         require(outputReserve >= amountOut, "Insufficient liquidity");
 
-        // Update reserves
+        // DÜZELTME: Fee transfer edildiği için reserve'den çıkarılmalı
+        // Update reserves - sadece amountAfterFee kadar ekle
         if (tokenIn == 0) {
-            reserve0 += amountIn;
+            reserve0 += amountAfterFee;
         } else if (tokenIn == 1) {
-            reserve1 += amountIn;
+            reserve1 += amountAfterFee;
         } else {
-            reserve2 += amountIn;
+            reserve2 += amountAfterFee;
         }
 
         if (tokenOut == 0) {

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "hardhat/console.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -61,8 +63,8 @@ contract StableSwapPool is Ownable {
         adminFeeBps = 0;
 
         lp = new LPToken("StableSwap LP", "sLP");
-        lp.transferOwnership(_lpOwner);
         LPToken(address(lp)).setPool(address(this));
+        lp.transferOwnership(_lpOwner);
     }
 
     // ------------------ Views: helpers ------------------
@@ -114,7 +116,7 @@ contract StableSwapPool is Ownable {
                 D = S;
                 break;
             }
-            uint256 D_P = D3 / (4 * prod);
+            uint256 D_P = (D3 * PRECISION) / (4 * prod);
 
             uint256 prevD = D;
             // numerator = (Ann*S + 2*D_P) * D
@@ -137,7 +139,7 @@ contract StableSwapPool is Ownable {
         uint256 _xNew,
         uint256 _D,
         uint256 _A
-    ) internal pure returns (uint256 yNew) {
+    ) internal view returns (uint256 yNew) {
         // From invariant for 2 coins
         // We solve for y via iterative method:
         // c = D^3 / (4 * A * 4 * xNew) = D^3 / (16 * A * xNew)
@@ -149,8 +151,8 @@ contract StableSwapPool is Ownable {
         uint256 D2 = (_D * _D) / PRECISION;
         // D^3
         uint256 D3 = (D2 * _D) / PRECISION;
-        uint256 c = (D3 * PRECISION) / (16 * _A * _xNew); // adjust for scale
-        uint256 b = (_D / _A) * 2 + _xNew;               // b unscaled sum
+        uint256 c = (D3 * PRECISION * PRECISION) / (Ann * 4 * _xNew); // adjust for scale
+        uint256 b = _xNew + (_D / Ann);                   // b unscaled sum
 
         // initial guess
         yNew = _D;
@@ -158,7 +160,7 @@ contract StableSwapPool is Ownable {
         for (uint256 i = 0; i < MAX_ITER; i++) {
             uint256 yPrev = yNew;
             // y = (y^2 + c) / (2y + b - D)
-            uint256 y2 = (yNew * yNew) / PRECISION;
+            uint256 y2 = yNew * yNew;
             uint256 numerator = y2 + c;
             uint256 denominator = (2 * yNew) + b - _D;
             yNew = numerator / denominator;

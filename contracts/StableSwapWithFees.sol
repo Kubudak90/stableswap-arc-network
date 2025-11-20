@@ -3,13 +3,14 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
  * @title StableSwapWithFees
  * @notice Fee distribution entegrasyonlu StableSwap
  */
-contract StableSwapWithFees {
+contract StableSwapWithFees is Ownable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token0;
@@ -28,7 +29,7 @@ contract StableSwapWithFees {
     event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1);
     event FeeDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
 
-    constructor(address _token0, address _token1) {
+    constructor(address _token0, address _token1) Ownable(msg.sender) {
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
     }
@@ -36,9 +37,7 @@ contract StableSwapWithFees {
     /**
      * @notice Fee distributor'ı ayarla
      */
-    function setFeeDistributor(address _feeDistributor) external {
-        // İlk kez ayarlanıyorsa herkes ayarlayabilir, sonra sadece owner
-        // Şimdilik basit tutuyoruz, gerekirse Ownable eklenebilir
+    function setFeeDistributor(address _feeDistributor) external onlyOwner {
         feeDistributor = FeeDistributor(_feeDistributor);
         emit FeeDistributorUpdated(address(0), _feeDistributor);
     }

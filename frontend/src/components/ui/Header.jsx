@@ -1,21 +1,39 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { NETWORK } from '../../config'
+
+// Network Icon
+const NetworkIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+)
+
+// Warning Icon
+const WarningIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+  </svg>
+)
 
 // Logo Component
 const Logo = () => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
     <div
       style={{
-        width: 32,
-        height: 32,
-        borderRadius: '10px',
+        width: 36,
+        height: 36,
+        borderRadius: '12px',
         background: 'linear-gradient(135deg, #fc72ff 0%, #4c82fb 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontWeight: 700,
-        fontSize: '1rem',
-        color: 'white'
+        fontSize: '1.1rem',
+        color: 'white',
+        boxShadow: '0 4px 12px rgba(252, 114, 255, 0.3)'
       }}
     >
       A
@@ -27,16 +45,91 @@ const Logo = () => (
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent'
     }}>
-      Arc
+      ArcSwap
     </span>
   </div>
 )
 
+// Network Button
+const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
+  if (isCorrectNetwork) {
+    return (
+      <button
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '8px 12px',
+          background: 'rgba(0, 211, 149, 0.1)',
+          border: '1px solid rgba(0, 211, 149, 0.3)',
+          borderRadius: '12px',
+          color: '#00d395',
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          cursor: 'default'
+        }}
+      >
+        <div style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: '#00d395',
+          animation: 'pulse 2s ease-in-out infinite'
+        }} />
+        Arc Testnet
+      </button>
+    )
+  }
+
+  return (
+    <button
+      onClick={onAddNetwork}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '8px 12px',
+        background: isHovered ? 'rgba(255, 179, 71, 0.2)' : 'rgba(255, 179, 71, 0.1)',
+        border: '1px solid rgba(255, 179, 71, 0.3)',
+        borderRadius: '12px',
+        color: '#ffb347',
+        fontSize: '0.875rem',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+      }}
+    >
+      <WarningIcon />
+      Switch to Arc
+    </button>
+  )
+}
+
 // Wallet Button
 const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
   if (isLoading) {
     return (
-      <button className="header-wallet-btn connecting">
+      <button
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 20px',
+          background: 'var(--background-tertiary)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          color: 'var(--text-secondary)',
+          fontSize: '0.95rem',
+          fontWeight: '600',
+          cursor: 'wait'
+        }}
+      >
         <span className="spinner" style={{ width: 16, height: 16 }}></span>
         Connecting...
       </button>
@@ -45,15 +138,57 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
 
   if (account) {
     return (
-      <button className="header-wallet-btn connected" onClick={onDisconnect}>
-        <span className="wallet-dot"></span>
+      <button
+        onClick={onDisconnect}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 16px',
+          background: isHovered ? 'var(--background-hover)' : 'var(--background-tertiary)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          color: 'white',
+          fontSize: '0.95rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease'
+        }}
+      >
+        <div style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: '#00d395'
+        }} />
         {account.slice(0, 6)}...{account.slice(-4)}
       </button>
     )
   }
 
   return (
-    <button className="header-wallet-btn" onClick={onConnect}>
+    <button
+      onClick={onConnect}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '10px 20px',
+        background: isHovered ? 'var(--primary-hover)' : 'var(--primary)',
+        border: 'none',
+        borderRadius: '16px',
+        color: 'black',
+        fontSize: '0.95rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        boxShadow: isHovered ? '0 0 20px rgba(252, 114, 255, 0.4)' : 'none'
+      }}
+    >
       Connect Wallet
     </button>
   )
@@ -63,11 +198,23 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
 const NavLink = ({ to, children }) => {
   const location = useLocation()
   const isActive = location.pathname === to
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
     <Link
       to={to}
-      className={`header-nav-link ${isActive ? 'active' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        padding: '8px 16px',
+        color: isActive ? 'white' : (isHovered ? 'white' : 'var(--text-secondary)'),
+        textDecoration: 'none',
+        fontSize: '1rem',
+        fontWeight: '500',
+        borderRadius: '12px',
+        background: isActive ? 'var(--background-tertiary)' : (isHovered ? 'var(--background-hover)' : 'transparent'),
+        transition: 'all 0.15s ease'
+      }}
     >
       {children}
     </Link>
@@ -75,25 +222,117 @@ const NavLink = ({ to, children }) => {
 }
 
 // Main Header Component
-function Header({ account, connectWallet, disconnectWallet, isLoading }) {
+function Header({ account, connectWallet, disconnectWallet, isLoading, currentChainId }) {
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false)
+
+  useEffect(() => {
+    checkNetwork()
+
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', checkNetwork)
+      return () => {
+        window.ethereum.removeListener('chainChanged', checkNetwork)
+      }
+    }
+  }, [currentChainId])
+
+  const checkNetwork = async () => {
+    if (window.ethereum) {
+      try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+        setIsCorrectNetwork(chainId === NETWORK.chainIdHex)
+      } catch (err) {
+        console.error('Error checking network:', err)
+      }
+    }
+  }
+
+  const handleAddNetwork = async () => {
+    if (!window.ethereum) {
+      alert('Please install MetaMask!')
+      return
+    }
+
+    try {
+      // First try to switch
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: NETWORK.chainIdHex }]
+      })
+    } catch (switchError) {
+      // If network doesn't exist, add it
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: NETWORK.chainIdHex,
+              chainName: NETWORK.name,
+              rpcUrls: [NETWORK.rpcUrl],
+              nativeCurrency: NETWORK.nativeCurrency,
+              blockExplorerUrls: [NETWORK.explorerUrl]
+            }]
+          })
+        } catch (addError) {
+          console.error('Error adding network:', addError)
+          alert('Could not add Arc Testnet. Please add it manually.')
+        }
+      } else {
+        console.error('Error switching network:', switchError)
+      }
+    }
+  }
+
   return (
-    <header className="header-container">
-      <div className="header-content">
+    <header style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+      background: 'rgba(13, 13, 13, 0.8)',
+      backdropFilter: 'blur(12px)',
+      borderBottom: '1px solid var(--border)'
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 24px',
+        height: '72px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
         {/* Left - Logo */}
         <Link to="/" style={{ textDecoration: 'none' }}>
           <Logo />
         </Link>
 
         {/* Center - Navigation */}
-        <nav className="header-nav">
+        <nav style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}>
           <NavLink to="/">Swap</NavLink>
           <NavLink to="/pool">Pool</NavLink>
           <NavLink to="/staking">Stake</NavLink>
           <NavLink to="/faucet">Faucet</NavLink>
         </nav>
 
-        {/* Right - Wallet */}
-        <div className="header-actions">
+        {/* Right - Network + Wallet */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <NetworkButton
+            isCorrectNetwork={isCorrectNetwork}
+            onAddNetwork={handleAddNetwork}
+          />
           <WalletButton
             account={account}
             isLoading={isLoading}
@@ -102,154 +341,26 @@ function Header({ account, connectWallet, disconnectWallet, isLoading }) {
           />
         </div>
       </div>
+
+      {/* Mobile Navigation */}
+      <style>{`
+        @media (max-width: 768px) {
+          nav {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            top: auto !important;
+            transform: none !important;
+            background: var(--card) !important;
+            border-top: 1px solid var(--border) !important;
+            padding: 8px !important;
+            justify-content: space-around !important;
+          }
+        }
+      `}</style>
     </header>
   )
-}
-
-// Header Styles (inline for component isolation)
-const headerStyles = `
-.header-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: rgba(13, 13, 13, 0.8);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-xl);
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.header-nav-link {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  transition: var(--transition-fast);
-}
-
-.header-nav-link:hover {
-  color: var(--text-primary);
-  background: var(--background-hover);
-}
-
-.header-nav-link.active {
-  color: var(--text-primary);
-  background: var(--background-tertiary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.header-wallet-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--primary);
-  color: var(--background);
-  border: none;
-  border-radius: var(--radius-full);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.header-wallet-btn:hover {
-  background: var(--primary-hover);
-  box-shadow: 0 0 20px rgba(252, 114, 255, 0.3);
-}
-
-.header-wallet-btn.connected {
-  background: var(--background-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-}
-
-.header-wallet-btn.connected:hover {
-  background: var(--background-hover);
-  border-color: var(--border-hover);
-  box-shadow: none;
-}
-
-.header-wallet-btn.connecting {
-  background: var(--background-tertiary);
-  color: var(--text-secondary);
-  cursor: wait;
-}
-
-.wallet-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--success);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .header-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: auto;
-    transform: none;
-    background: var(--card);
-    border-top: 1px solid var(--border);
-    padding: var(--spacing-sm);
-    justify-content: space-around;
-  }
-
-  .header-nav-link {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: 0.875rem;
-  }
-
-  .header-content {
-    padding: 0 var(--spacing-lg);
-  }
-}
-`
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleId = 'header-styles'
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style')
-    style.id = styleId
-    style.textContent = headerStyles
-    document.head.appendChild(style)
-  }
 }
 
 export default Header

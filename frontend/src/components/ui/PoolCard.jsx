@@ -4,59 +4,92 @@ import { CONTRACTS, getExplorerUrl } from '../../config'
 
 // SVG Icons
 const PlusIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <line x1="12" y1="5" x2="12" y2="19"/>
     <line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 )
 
 const MinusIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 )
 
 const CheckIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="20 6 9 17 4 12"/>
   </svg>
 )
 
 const ChevronDownIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <polyline points="6 9 12 15 18 9"/>
   </svg>
 )
 
 // Token data
 const TOKENS = [
-  { symbol: 'tUSDC', name: 'Test USDC', color: '#2775ca', decimals: 6 },
-  { symbol: 'tUSDT', name: 'Test USDT', color: '#50af95', decimals: 6 },
-  { symbol: 'tUSDY', name: 'Test USDY', color: '#6366f1', decimals: 6 },
+  { symbol: 'tUSDC', name: 'Test USDC', color: '#2775ca', bgColor: '#2775ca', decimals: 6 },
+  { symbol: 'tUSDT', name: 'Test USDT', color: '#26a17b', bgColor: '#26a17b', decimals: 6 },
+  { symbol: 'tUSDY', name: 'Test USDY', color: '#6366f1', bgColor: '#6366f1', decimals: 6 },
 ]
 
 // Pool configurations
 const POOLS = [
-  { id: '2pool', name: 'USDC-USDT Pool', tokens: [0, 1], use3Pool: false },
-  { id: '3pool', name: '3Pool (All Stables)', tokens: [0, 1, 2], use3Pool: true },
+  { id: '2pool', name: 'USDC-USDT', tokens: [0, 1], use3Pool: false },
+  { id: '3pool', name: '3Pool', tokens: [0, 1, 2], use3Pool: true },
 ]
 
 // Token Icon Component
-const TokenIcon = ({ symbol, size = 28 }) => {
-  const token = TOKENS.find(t => t.symbol === symbol)
-  const color = token?.color || '#fc72ff'
+const TokenIcon = ({ symbol, size = 32 }) => {
+  const token = TOKENS.find(t => t.symbol === symbol) || TOKENS[0]
+
+  const getDisplayText = () => {
+    if (symbol === 'tUSDC') return '$'
+    if (symbol === 'tUSDT') return '₮'
+    if (symbol === 'tUSDY') return 'Y'
+    return symbol?.charAt(0) || '?'
+  }
 
   return (
     <div
-      className="token-icon"
       style={{
         width: size,
         height: size,
-        background: color,
-        fontSize: size * 0.35
+        borderRadius: '50%',
+        background: token.bgColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size * 0.5,
+        fontWeight: '700',
+        color: 'white',
+        flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        border: '2px solid rgba(255,255,255,0.1)'
       }}
     >
-      {symbol?.charAt(0)}
+      {getDisplayText()}
+    </div>
+  )
+}
+
+// Stacked Token Icons for Pool display
+const StackedTokenIcons = ({ tokenIndices, size = 28 }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {tokenIndices.map((idx, i) => (
+        <div
+          key={idx}
+          style={{
+            marginLeft: i > 0 ? -10 : 0,
+            zIndex: tokenIndices.length - i
+          }}
+        >
+          <TokenIcon symbol={TOKENS[idx].symbol} size={size} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -64,7 +97,7 @@ const TokenIcon = ({ symbol, size = 28 }) => {
 // Token Input for Pool
 const PoolTokenInput = ({ token, value, onChange, balance, onMaxClick, disabled }) => {
   return (
-    <div className="token-input-container" style={{ marginBottom: 'var(--spacing-md)' }}>
+    <div className="token-input-container" style={{ marginBottom: '12px' }}>
       <div className="token-input-row">
         <input
           type="text"
@@ -80,17 +113,28 @@ const PoolTokenInput = ({ token, value, onChange, balance, onMaxClick, disabled 
           disabled={disabled}
           style={{ fontSize: '1.5rem' }}
         />
-        <div className="token-selector" style={{ cursor: 'default' }}>
-          <TokenIcon symbol={token.symbol} />
-          <span className="token-symbol">{token.symbol}</span>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '6px 12px 6px 6px',
+          background: 'var(--background-tertiary)',
+          borderRadius: '20px'
+        }}>
+          <TokenIcon symbol={token.symbol} size={28} />
+          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>
+            {token.symbol}
+          </span>
         </div>
       </div>
       <div className="token-balance-row">
         <span className="token-usd-value">
-          {value && !isNaN(value) ? `$${parseFloat(value).toLocaleString()}` : ''}
+          {value && !isNaN(value) && parseFloat(value) > 0
+            ? `≈ $${parseFloat(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+            : ''}
         </span>
         <div className="token-balance">
-          <span>Balance: {parseFloat(balance || 0).toFixed(2)}</span>
+          <span>Balance: {parseFloat(balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
           {!disabled && parseFloat(balance) > 0 && (
             <button className="max-btn" onClick={onMaxClick}>MAX</button>
           )}
@@ -105,30 +149,27 @@ const PoolSelect = ({ selectedPool, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div style={{ position: 'relative', marginBottom: 'var(--spacing-xl)' }}>
+    <div style={{ position: 'relative', marginBottom: '20px' }}>
       <button
-        className="token-selector"
         style={{
           width: '100%',
-          padding: 'var(--spacing-md) var(--spacing-lg)',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--background-secondary)'
+          padding: '12px 16px',
+          background: 'var(--background-secondary)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease'
         }}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-          <div style={{ display: 'flex', marginRight: 'var(--spacing-sm)' }}>
-            {selectedPool.tokens.map((tokenIdx, i) => (
-              <TokenIcon
-                key={tokenIdx}
-                symbol={TOKENS[tokenIdx].symbol}
-                size={24}
-                style={{ marginLeft: i > 0 ? -8 : 0 }}
-              />
-            ))}
-          </div>
-          <span className="token-symbol">{selectedPool.name}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <StackedTokenIcons tokenIndices={selectedPool.tokens} size={28} />
+          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>
+            {selectedPool.name}
+          </span>
         </div>
         <ChevronDownIcon />
       </button>
@@ -140,34 +181,40 @@ const PoolSelect = ({ selectedPool, onSelect }) => {
             top: '100%',
             left: 0,
             right: 0,
-            marginTop: 'var(--spacing-sm)',
+            marginTop: '8px',
             background: 'var(--card)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
+            borderRadius: '12px',
             zIndex: 10,
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
           }}
         >
           {POOLS.map((pool) => (
             <button
               key={pool.id}
-              className="token-list-item"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                background: selectedPool.id === pool.id ? 'var(--background-hover)' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
               onClick={() => {
                 onSelect(pool)
                 setIsOpen(false)
               }}
+              onMouseEnter={(e) => e.target.style.background = 'var(--background-hover)'}
+              onMouseLeave={(e) => e.target.style.background = selectedPool.id === pool.id ? 'var(--background-hover)' : 'transparent'}
             >
-              <div style={{ display: 'flex', marginRight: 'var(--spacing-sm)' }}>
-                {pool.tokens.map((tokenIdx, i) => (
-                  <TokenIcon
-                    key={tokenIdx}
-                    symbol={TOKENS[tokenIdx].symbol}
-                    size={24}
-                    style={{ marginLeft: i > 0 ? -8 : 0 }}
-                  />
-                ))}
-              </div>
-              <span style={{ flex: 1 }}>{pool.name}</span>
+              <StackedTokenIcons tokenIndices={pool.tokens} size={28} />
+              <span style={{ flex: 1, textAlign: 'left', fontSize: '1rem', fontWeight: '500', color: 'white' }}>
+                {pool.name}
+              </span>
               {selectedPool.id === pool.id && <CheckIcon />}
             </button>
           ))}
@@ -179,7 +226,7 @@ const PoolSelect = ({ selectedPool, onSelect }) => {
 
 // Main PoolCard Component
 function PoolCard({ contracts, account }) {
-  const [activeTab, setActiveTab] = useState('add') // 'add' or 'remove'
+  const [activeTab, setActiveTab] = useState('add')
   const [selectedPool, setSelectedPool] = useState(POOLS[0])
   const [amounts, setAmounts] = useState({})
   const [lpAmount, setLpAmount] = useState('')
@@ -299,7 +346,7 @@ function PoolCard({ contracts, account }) {
       await loadData()
     } catch (err) {
       console.error('Add liquidity error:', err)
-      setError(err.message || 'Failed to add liquidity')
+      setError(err.reason || err.message || 'Failed to add liquidity')
     } finally {
       setLoading(false)
     }
@@ -329,7 +376,7 @@ function PoolCard({ contracts, account }) {
       await loadData()
     } catch (err) {
       console.error('Remove liquidity error:', err)
-      setError(err.message || 'Failed to remove liquidity')
+      setError(err.reason || err.message || 'Failed to remove liquidity')
     } finally {
       setLoading(false)
     }
@@ -344,7 +391,6 @@ function PoolCard({ contracts, account }) {
       const hasAmount = selectedPool.tokens.some(idx => amounts[idx] && parseFloat(amounts[idx]) > 0)
       if (!hasAmount) return { text: 'Enter amounts', disabled: true }
 
-      // Check balances
       for (const idx of selectedPool.tokens) {
         if (amounts[idx] && parseFloat(amounts[idx]) > parseFloat(balances[idx])) {
           return { text: `Insufficient ${TOKENS[idx].symbol}`, disabled: true }
@@ -368,12 +414,14 @@ function PoolCard({ contracts, account }) {
         <button
           className={`pool-tab ${activeTab === 'add' ? 'active' : ''}`}
           onClick={() => setActiveTab('add')}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
         >
           <PlusIcon /> Add
         </button>
         <button
           className={`pool-tab ${activeTab === 'remove' ? 'active' : ''}`}
           onClick={() => setActiveTab('remove')}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
         >
           <MinusIcon /> Remove
         </button>
@@ -386,9 +434,9 @@ function PoolCard({ contracts, account }) {
       <div className="pool-stats">
         {selectedPool.tokens.map(tokenIdx => (
           <div key={tokenIdx} className="pool-stat-card">
-            <div className="pool-stat-label">{TOKENS[tokenIdx].symbol} Reserve</div>
+            <div className="pool-stat-label">{TOKENS[tokenIdx].symbol}</div>
             <div className="pool-stat-value">
-              {parseFloat(reserves[tokenIdx] || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              {parseFloat(reserves[tokenIdx] || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
           </div>
         ))}
@@ -399,7 +447,7 @@ function PoolCard({ contracts, account }) {
         <div className="pool-stat-card">
           <div className="pool-stat-label">Your LP</div>
           <div className="pool-stat-value">
-            {parseFloat(lpBalance).toFixed(4)}
+            {parseFloat(lpBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}
           </div>
         </div>
       </div>
@@ -408,7 +456,7 @@ function PoolCard({ contracts, account }) {
       {error && (
         <div className="alert alert-error">
           <span className="alert-content">{error}</span>
-          <button className="alert-close" onClick={() => setError('')}>&times;</button>
+          <button className="alert-close" onClick={() => setError('')}>×</button>
         </div>
       )}
 
@@ -424,11 +472,11 @@ function PoolCard({ contracts, account }) {
                 rel="noopener noreferrer"
                 style={{ marginLeft: 8, color: 'inherit', textDecoration: 'underline' }}
               >
-                View tx
+                View tx ↗
               </a>
             )}
           </span>
-          <button className="alert-close" onClick={() => setSuccess('')}>&times;</button>
+          <button className="alert-close" onClick={() => setSuccess('')}>×</button>
         </div>
       )}
 
@@ -470,7 +518,7 @@ function PoolCard({ contracts, account }) {
           <div className="token-balance-row">
             <span></span>
             <div className="token-balance">
-              <span>Balance: {parseFloat(lpBalance).toFixed(4)}</span>
+              <span>Balance: {parseFloat(lpBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
               {parseFloat(lpBalance) > 0 && (
                 <button className="max-btn" onClick={() => setLpAmount(lpBalance)}>MAX</button>
               )}
@@ -481,7 +529,7 @@ function PoolCard({ contracts, account }) {
 
       {/* Action Button */}
       <button
-        className={`swap-btn swap-btn-primary`}
+        className="swap-btn swap-btn-primary"
         onClick={activeTab === 'add' ? handleAddLiquidity : handleRemoveLiquidity}
         disabled={buttonState.disabled}
       >

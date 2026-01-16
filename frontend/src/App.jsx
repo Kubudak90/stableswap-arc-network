@@ -7,10 +7,8 @@ import { CONTRACTS, NETWORK, ABIS } from './config'
 import Header from './components/ui/Header'
 import SwapCard from './components/ui/SwapCard'
 import PoolCard from './components/ui/PoolCard'
-
-// Legacy Components (for routes that aren't redesigned yet)
-import FaucetPanel from './components/FaucetPanel'
-import StakingPanel from './components/StakingPanel'
+import StakingCard from './components/ui/StakingCard'
+import FaucetCard from './components/ui/FaucetCard'
 
 // Styles
 import './styles/shadcn.css'
@@ -255,7 +253,7 @@ function App() {
             </PageContainer>
           } />
           <Route path="/staking" element={
-            <StakingPanel
+            <StakingCard
               contracts={contracts}
               account={account}
               provider={provider}
@@ -263,7 +261,7 @@ function App() {
             />
           } />
           <Route path="/faucet" element={
-            <FaucetPanel
+            <FaucetCard
               contracts={contracts}
               account={account}
             />

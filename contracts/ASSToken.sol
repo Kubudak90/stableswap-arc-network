@@ -35,6 +35,7 @@ contract ASSToken is ERC20, ERC20Burnable, Ownable {
      * @notice Fee distribution kontratını ayarla (sadece owner)
      */
     function setFeeDistributor(address _feeDistributor) external onlyOwner {
+        require(_feeDistributor != address(0), "ASSToken: zero address");
         address oldDistributor = feeDistributor;
         feeDistributor = _feeDistributor;
         emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
@@ -44,6 +45,7 @@ contract ASSToken is ERC20, ERC20Burnable, Ownable {
      * @notice Liquidity rewards kontratını ayarla (sadece owner)
      */
     function setLiquidityRewards(address _liquidityRewards) external onlyOwner {
+        require(_liquidityRewards != address(0), "ASSToken: zero address");
         address oldRewards = liquidityRewards;
         liquidityRewards = _liquidityRewards;
         emit LiquidityRewardsUpdated(oldRewards, _liquidityRewards);
@@ -53,6 +55,7 @@ contract ASSToken is ERC20, ERC20Burnable, Ownable {
      * @notice Staking kontratını ayarla (sadece owner)
      */
     function setStakingContract(address _stakingContract) external onlyOwner {
+        require(_stakingContract != address(0), "ASSToken: zero address");
         address oldContract = stakingContract;
         stakingContract = _stakingContract;
         emit StakingContractUpdated(oldContract, _stakingContract);
@@ -66,6 +69,8 @@ contract ASSToken is ERC20, ERC20Burnable, Ownable {
             msg.sender == feeDistributor || msg.sender == liquidityRewards,
             "ASSToken: Only authorized contract can mint"
         );
+        require(to != address(0), "ASSToken: mint to zero address");
+        require(amount > 0, "ASSToken: amount must be > 0");
         _mint(to, amount);
         emit TokensMinted(to, amount);
     }

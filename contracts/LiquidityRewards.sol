@@ -4,14 +4,17 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ASSToken} from "./ASSToken.sol";
 
 /**
  * @title LiquidityRewards
  * @notice Pool'larda likidite sağlayanlara ASS token ödül dağıtan kontrat
  * @dev Emission schedule ile zamanlı token dağıtımı yapar
+ * Pausable ve ReentrancyGuard ile güvenli
  */
-contract LiquidityRewards is Ownable {
+contract LiquidityRewards is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     ASSToken public immutable assToken;
@@ -65,11 +68,26 @@ contract LiquidityRewards is Ownable {
     event RewardPerSecondUpdated(uint256 oldRate, uint256 newRate);
 
     constructor(address _assToken) Ownable(msg.sender) {
+        require(_assToken != address(0), "LiquidityRewards: assToken zero address");
         assToken = ASSToken(_assToken);
         startTime = block.timestamp;
         // İlk epoch için reward per second'u manuel ayarla
         rewardPerSecond = YEAR_1_SHARE / YEAR_DURATION;
         currentEpoch = 0;
+    }
+
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     /**
@@ -111,7 +129,7 @@ contract LiquidityRewards is Ownable {
      * @param poolId Pool ID
      * @param amount Eklenen likidite miktarı (reserve0 + reserve1 veya reserve0+reserve1+reserve2)
      */
-    function deposit(uint256 poolId, uint256 amount) external {
+    function deposit(uint256 poolId, uint256 amount) external whenNotPaused nonReentrant {
         require(poolId < poolInfo.length, "Invalid pool");
         PoolInfo storage pool = poolInfo[poolId];
         require(pool.isActive, "Pool inactive");
@@ -145,7 +163,7 @@ contract LiquidityRewards is Ownable {
      * @param poolId Pool ID
      * @param amount Çıkarılan likidite miktarı
      */
-    function withdraw(uint256 poolId, uint256 amount) external {
+    function withdraw(uint256 poolId, uint256 amount) external whenNotPaused nonReentrant {
         require(poolId < poolInfo.length, "Invalid pool");
         PoolInfo storage pool = poolInfo[poolId];
         
@@ -172,7 +190,7 @@ contract LiquidityRewards is Ownable {
     /**
      * @notice Ödülleri claim et
      */
-    function claimRewards(uint256 poolId) external {
+    function claimRewards(uint256 poolId) external whenNotPaused nonReentrant {
         require(poolId < poolInfo.length, "Invalid pool");
         
         updatePool(poolId);

@@ -1,0 +1,40 @@
+# Echidna Configuration for StableSwap Arc Network
+# Fuzz Testing Configuration
+
+# Test settings
+testLimit: 50000            # Number of test iterations
+seqLen: 100                 # Maximum sequence length
+shrinkLimit: 5000           # Maximum shrink iterations
+timeout: 300                # Test timeout in seconds
+
+# Coverage settings
+coverage: true              # Enable coverage collection
+corpusDir: "echidna-corpus" # Directory to save interesting inputs
+
+# Contract settings
+cryticArgs: ["--solc-args", "--optimize --optimize-runs 1000"]
+
+# Test mode
+testMode: "assertion"       # Test for assertion failures
+
+# Transaction settings
+maxValue: 100000000000000000000    # Max ETH value (100 ETH)
+maxTimeDelay: 604800               # Max time delay (1 week)
+maxBlockDelay: 60480               # Max block delay
+
+# Contract filters
+filterFunctions: []         # No function filtering
+filterBlacklist: true       # Use blacklist mode
+
+# Blacklisted functions (don't fuzz these)
+blacklistFunctions:
+  - "transferOwnership(address)"
+  - "renounceOwnership()"
+
+# Deployment settings
+deployer: "0x10000"         # Deployer address
+sender: ["0x20000", "0x30000", "0x40000"]  # Sender addresses
+
+# Output settings
+format: "text"              # Output format
+quiet: false                # Verbose output

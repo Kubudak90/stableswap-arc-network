@@ -259,8 +259,10 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: NETWORK.chainIdHex }]
       })
+      // Success - network switched
+      setIsCorrectNetwork(true)
     } catch (switchError) {
-      // If network doesn't exist, add it
+      // If network doesn't exist (error 4902), add it
       if (switchError.code === 4902) {
         try {
           await window.ethereum.request({
@@ -270,15 +272,25 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
               chainName: NETWORK.name,
               rpcUrls: [NETWORK.rpcUrl],
               nativeCurrency: NETWORK.nativeCurrency,
-              blockExplorerUrls: [NETWORK.explorerUrl]
+              blockExplorerUrls: NETWORK.explorerUrl ? [NETWORK.explorerUrl] : []
             }]
           })
+          // After adding, try to switch again
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: NETWORK.chainIdHex }]
+          })
+          setIsCorrectNetwork(true)
         } catch (addError) {
           console.error('Error adding network:', addError)
-          alert('Could not add Arc Testnet. Please add it manually.')
+          alert('Could not add Arc Testnet. Please add it manually:\n\nNetwork Name: ' + NETWORK.name + '\nRPC URL: ' + NETWORK.rpcUrl + '\nChain ID: ' + NETWORK.chainId)
         }
+      } else if (switchError.code === 4001) {
+        // User rejected the request
+        alert('Please switch to Arc Testnet to use this app.')
       } else {
         console.error('Error switching network:', switchError)
+        alert('Could not switch network. Please switch to Arc Testnet manually.')
       }
     }
   }

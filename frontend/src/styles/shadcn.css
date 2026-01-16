@@ -189,16 +189,18 @@
   align-items: center;
   gap: var(--spacing-sm);
   background: var(--background-tertiary);
-  border: none;
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: var(--spacing-xs) var(--spacing-md) var(--spacing-xs) var(--spacing-xs);
   cursor: pointer;
   transition: var(--transition-fast);
   flex-shrink: 0;
+  color: var(--text-primary);
 }
 
 .token-selector:hover {
   background: var(--background-hover);
+  border-color: var(--border-hover);
 }
 
 .token-icon {
@@ -215,9 +217,10 @@
 }
 
 .token-symbol {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff !important;
+  margin-left: 4px;
 }
 
 .token-chevron {

@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { SETTINGS, calculateMinOutput, getExplorerUrl } from '../config'
 
 function UnifiedSwapPanel({ contracts, account, provider, signer }) {
   const [amountIn, setAmountIn] = useState('')
   const [amountOut, setAmountOut] = useState('')
+  const [minAmountOut, setMinAmountOut] = useState('')
   const [tokenInIndex, setTokenInIndex] = useState(0) // 0: tUSDC, 1: tUSDT, 2: tUSDY
   const [tokenOutIndex, setTokenOutIndex] = useState(1)
-  const [slippage, setSlippage] = useState('0.5')
+  const [slippage, setSlippage] = useState(SETTINGS.defaultSlippage / 100) // Convert from bps to percent
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [txHash, setTxHash] = useState('')
   const [balances, setBalances] = useState({ token0: '0', token1: '0', token2: '0' })
   const [reserves2Pool, setReserves2Pool] = useState({ reserve0: '0', reserve1: '0' })
   const [reserves3Pool, setReserves3Pool] = useState({ reserve0: '0', reserve1: '0', reserve2: '0' })
@@ -194,17 +197,31 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
       }
       
       console.log("⏳ Waiting for swap transaction...")
-      await swapTx.wait()
+      const receipt = await swapTx.wait()
       console.log("✅ Swap transaction confirmed")
-      
+
+      setTxHash(receipt.hash)
       setSuccess(`✅ Başarılı! ${amountIn} ${tokenNames[tokenInIndex]} → ${amountOut} ${tokenNames[tokenOutIndex]}`)
       setAmountIn('')
       setAmountOut('')
-      
+      setMinAmountOut('')
+
       // Reload data
       await loadData()
     } catch (err) {
-      setError('Swap işlemi başarısız: ' + err.message)
+      console.error('Swap error:', err)
+      // Better error messages
+      let errorMsg = 'Swap işlemi başarısız: '
+      if (err.message.includes('user rejected')) {
+        errorMsg += 'İşlem iptal edildi'
+      } else if (err.message.includes('insufficient')) {
+        errorMsg += 'Yetersiz bakiye veya likidite'
+      } else if (err.message.includes('slippage')) {
+        errorMsg += 'Slippage toleransı aşıldı, toleransı artırın'
+      } else {
+        errorMsg += err.message
+      }
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -212,23 +229,44 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
 
   const handleAmountInChange = async (value) => {
     setAmountIn(value)
-    
-    if (value && !isNaN(value)) {
+
+    if (value && !isNaN(value) && parseFloat(value) > 0) {
       try {
         const amountInWei = ethers.parseUnits(value, 6)
-        
+
         // 1:1 oran, sadece fee çıkar: amountOut = amountIn * (10000 - 4) / 10000
         const amountOutWei = amountInWei * 9996n / 10000n
         const amountOutFormatted = ethers.formatUnits(amountOutWei, 6)
         setAmountOut(amountOutFormatted)
+
+        // Calculate minimum output based on slippage tolerance
+        const slippageBps = Math.round(parseFloat(slippage) * 100) // Convert percent to bps
+        const minOutWei = calculateMinOutput(amountOutWei, slippageBps)
+        setMinAmountOut(ethers.formatUnits(minOutWei, 6))
       } catch (error) {
         console.error('Price calculation error:', error)
         setAmountOut('')
+        setMinAmountOut('')
       }
     } else {
       setAmountOut('')
+      setMinAmountOut('')
     }
   }
+
+  // Update min amount when slippage changes
+  useEffect(() => {
+    if (amountOut && parseFloat(amountOut) > 0) {
+      try {
+        const amountOutWei = ethers.parseUnits(amountOut, 6)
+        const slippageBps = Math.round(parseFloat(slippage) * 100)
+        const minOutWei = calculateMinOutput(amountOutWei, slippageBps)
+        setMinAmountOut(ethers.formatUnits(minOutWei, 6))
+      } catch (err) {
+        console.error('Min amount calculation error:', err)
+      }
+    }
+  }, [slippage, amountOut])
 
   // Check if pool has liquidity
   const hasLiquidity = () => {
@@ -314,7 +352,23 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
         )}
 
         {error && <div className="error">{error}</div>}
-        {success && <div className="success">{success}</div>}
+        {success && (
+          <div className="success">
+            {success}
+            {txHash && (
+              <div style={{ marginTop: '8px', fontSize: '0.85rem' }}>
+                <a
+                  href={getExplorerUrl(txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#059669', textDecoration: 'underline' }}
+                >
+                  İşlemi görüntüle ↗
+                </a>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="form-group">
           <label>Girdi Token</label>
@@ -400,16 +454,64 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
 
         <div className="form-group">
           <label>Slippage Tolerance (%)</label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            {[0.1, 0.5, 1.0].map((val) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => setSlippage(val.toString())}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: parseFloat(slippage) === val ? '2px solid #6366f1' : '1px solid #e2e8f0',
+                  background: parseFloat(slippage) === val ? '#eef2ff' : '#fff',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: parseFloat(slippage) === val ? '600' : '400'
+                }}
+              >
+                {val}%
+              </button>
+            ))}
+          </div>
           <input
             type="number"
             value={slippage}
-            onChange={(e) => setSlippage(e.target.value)}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value)
+              if (val >= 0 && val <= SETTINGS.maxSlippage / 100) {
+                setSlippage(e.target.value)
+              }
+            }}
             placeholder="0.5"
             step="0.1"
             min="0.1"
-            max="50"
+            max={SETTINGS.maxSlippage / 100}
           />
+          {parseFloat(slippage) > 5 && (
+            <div style={{ color: '#f59e0b', fontSize: '0.8rem', marginTop: '4px' }}>
+              ⚠️ Yüksek slippage! Beklenenden farklı fiyatla işlem gerçekleşebilir.
+            </div>
+          )}
         </div>
+
+        {minAmountOut && parseFloat(minAmountOut) > 0 && (
+          <div style={{
+            padding: '12px',
+            background: '#f0fdf4',
+            borderRadius: '8px',
+            border: '1px solid #bbf7d0',
+            marginBottom: '16px',
+            fontSize: '0.9rem'
+          }}>
+            <div style={{ color: '#166534', fontWeight: '500' }}>
+              Minimum Alınacak: {parseFloat(minAmountOut).toFixed(6)} {tokenNames[tokenOutIndex]}
+            </div>
+            <div style={{ color: '#15803d', fontSize: '0.8rem', marginTop: '4px' }}>
+              Slippage dahil ({slippage}%)
+            </div>
+          </div>
+        )}
 
         <button 
           className="btn" 

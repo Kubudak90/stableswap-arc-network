@@ -13,6 +13,7 @@ import {LPToken} from "./LPToken.sol";
  * @notice Curve-inspired stableswap AMM for stablecoins (low slippage near peg).
  * @dev Fixed-point math with 1e18 scaling. Iterative getD/getY. No oracle.
  * Pausable ve ReentrancyGuard ile güvenli
+ * Flash loan koruması: Aynı blokta likidite ekleme/çıkarma engellenir
  */
 contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -39,10 +40,23 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
     // admin fee share on swap fees (optional, set 0 for MVP)
     uint256 public adminFeeBps;
 
+    // ============ FLASH LOAN KORUMASI ============
+    // Kullanıcının son işlem yaptığı blok numarası
+    mapping(address => uint256) public lastActionBlock;
+    // Flash loan koruması aktif mi
+    bool public flashLoanProtectionEnabled = true;
+
+    // ============ PRICE MANIPULATION KORUMASI ============
+    // Tek seferde maksimum swap yüzdesi (reserv'in %'si olarak, 100 = %1)
+    uint256 public maxSwapPercentage = 1000; // %10 default
+    uint256 public constant MAX_SWAP_PERCENTAGE_LIMIT = 5000; // Max %50
+
     event AddLiquidity(address indexed provider, uint256 amount0, uint256 amount1, uint256 lpMinted);
     event RemoveLiquidity(address indexed provider, uint256 lpBurned, uint256 amount0, uint256 amount1);
     event Swap(address indexed trader, uint256 amountIn, bool zeroForOne, uint256 amountOut);
     event SetParams(uint256 A, uint256 feeBps, uint256 adminFeeBps);
+    event FlashLoanProtectionToggled(bool enabled);
+    event MaxSwapPercentageUpdated(uint256 oldPercentage, uint256 newPercentage);
 
     constructor(
         address _token0,
@@ -83,6 +97,40 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
      */
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    /**
+     * @notice Flash loan korumasını aç/kapat (sadece owner)
+     */
+    function setFlashLoanProtection(bool _enabled) external onlyOwner {
+        flashLoanProtectionEnabled = _enabled;
+        emit FlashLoanProtectionToggled(_enabled);
+    }
+
+    /**
+     * @notice Maksimum swap yüzdesini ayarla (sadece owner)
+     * @param _percentage Yeni yüzde (100 = %1, 1000 = %10)
+     */
+    function setMaxSwapPercentage(uint256 _percentage) external onlyOwner {
+        require(_percentage > 0, "pool: percentage zero");
+        require(_percentage <= MAX_SWAP_PERCENTAGE_LIMIT, "pool: percentage too high");
+        uint256 oldPercentage = maxSwapPercentage;
+        maxSwapPercentage = _percentage;
+        emit MaxSwapPercentageUpdated(oldPercentage, _percentage);
+    }
+
+    /**
+     * @dev Flash loan koruması - aynı blokta işlem yapılmasını engeller
+     */
+    modifier flashLoanGuard() {
+        if (flashLoanProtectionEnabled) {
+            require(
+                lastActionBlock[msg.sender] < block.number,
+                "pool: flash loan protection - wait for next block"
+            );
+        }
+        _;
+        lastActionBlock[msg.sender] = block.number;
     }
 
     // ------------------ Views: helpers ------------------
@@ -191,7 +239,7 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
 
     // ------------------ Core: liquidity ops ------------------
 
-    function addLiquidity(uint256 amount0, uint256 amount1, uint256 minLpOut) external whenNotPaused nonReentrant returns (uint256 lpOut) {
+    function addLiquidity(uint256 amount0, uint256 amount1, uint256 minLpOut) external whenNotPaused nonReentrant flashLoanGuard returns (uint256 lpOut) {
         require(amount0 > 0 && amount1 > 0, "add: zero amount");
         // transfer in
         token0.safeTransferFrom(msg.sender, address(this), amount0);
@@ -226,7 +274,7 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
         emit AddLiquidity(msg.sender, amount0, amount1, lpOut);
     }
 
-    function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1) external whenNotPaused nonReentrant returns (uint256 amt0, uint256 amt1) {
+    function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1) external whenNotPaused nonReentrant flashLoanGuard returns (uint256 amt0, uint256 amt1) {
         require(lpAmount > 0, "remove: zero amount");
         uint256 supply = lp.totalSupply();
         require(supply > 0, "remove: empty");
@@ -262,8 +310,16 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
      * @param amountIn amount of input token in its native decimals
      * @param minAmountOut minimum acceptable out
      */
-    function swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut) external whenNotPaused nonReentrant returns (uint256 amountOut) {
+    function swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut) external whenNotPaused nonReentrant flashLoanGuard returns (uint256 amountOut) {
         require(amountIn > 0, "swap: zero in");
+
+        // Price manipulation koruması - tek seferde max yüzde kontrolü
+        uint256 scaledIn = zeroForOne ? _scaleTo1e18(amountIn, decimals0) : _scaleTo1e18(amountIn, decimals1);
+        uint256 relevantReserve = zeroForOne ? x : y;
+        if (relevantReserve > 0) {
+            uint256 maxAllowed = (relevantReserve * maxSwapPercentage) / BPS;
+            require(scaledIn <= maxAllowed, "swap: exceeds max swap limit");
+        }
 
         if (zeroForOne) {
             token0.safeTransferFrom(msg.sender, address(this), amountIn);
@@ -324,4 +380,61 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
         adminFeeBps = _adminFeeBps;
         emit SetParams(_A, _feeBps, _adminFeeBps);
     }
+
+    // ------------------ Emergency Functions ------------------
+
+    /**
+     * @notice Acil durum token çekme - sadece pause durumunda ve owner tarafından
+     * @dev Kontrat hacklendiğinde veya kritik bir bug bulunduğunda kullanılır
+     * @param token Çekilecek token adresi
+     * @param to Alıcı adres
+     * @param amount Çekilecek miktar
+     */
+    function emergencyWithdraw(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner whenPaused {
+        require(to != address(0), "pool: to zero address");
+        require(amount > 0, "pool: amount zero");
+
+        IERC20(token).safeTransfer(to, amount);
+
+        // Rezervleri güncelle (eğer pool tokenlarından biriyse)
+        if (token == address(token0)) {
+            uint256 newBalance = token0.balanceOf(address(this));
+            x = _scaleTo1e18(newBalance, decimals0);
+        } else if (token == address(token1)) {
+            uint256 newBalance = token1.balanceOf(address(this));
+            y = _scaleTo1e18(newBalance, decimals1);
+        }
+
+        emit EmergencyWithdraw(token, to, amount);
+    }
+
+    /**
+     * @notice Tüm tokenları çek (acil durum)
+     * @dev Pause durumunda tüm likiditeyi owner'a çeker
+     */
+    function emergencyWithdrawAll(address to) external onlyOwner whenPaused {
+        require(to != address(0), "pool: to zero address");
+
+        uint256 balance0 = token0.balanceOf(address(this));
+        uint256 balance1 = token1.balanceOf(address(this));
+
+        if (balance0 > 0) {
+            token0.safeTransfer(to, balance0);
+        }
+        if (balance1 > 0) {
+            token1.safeTransfer(to, balance1);
+        }
+
+        x = 0;
+        y = 0;
+
+        emit EmergencyWithdrawAll(to, balance0, balance1);
+    }
+
+    event EmergencyWithdraw(address indexed token, address indexed to, uint256 amount);
+    event EmergencyWithdrawAll(address indexed to, uint256 amount0, uint256 amount1);
 }

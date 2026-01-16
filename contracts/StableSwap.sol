@@ -149,8 +149,61 @@ contract StableSwap is Ownable, Pausable, ReentrancyGuard {
 
     function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256) {
         if (amountIn == 0) return 0;
-        
+
         // Stabilcoin için 1:1 oran + küçük fee
         return amountIn * (BPS - FEE_BPS) / BPS;
     }
+
+    // ------------------ Emergency Functions ------------------
+
+    /**
+     * @notice Acil durum token çekme - sadece pause durumunda ve owner tarafından
+     * @param token Çekilecek token adresi
+     * @param to Alıcı adres
+     * @param amount Çekilecek miktar
+     */
+    function emergencyWithdraw(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner whenPaused {
+        require(to != address(0), "StableSwap: to zero address");
+        require(amount > 0, "StableSwap: amount zero");
+
+        IERC20(token).safeTransfer(to, amount);
+
+        // Rezervleri güncelle
+        if (token == address(token0)) {
+            reserve0 = token0.balanceOf(address(this));
+        } else if (token == address(token1)) {
+            reserve1 = token1.balanceOf(address(this));
+        }
+
+        emit EmergencyWithdraw(token, to, amount);
+    }
+
+    /**
+     * @notice Tüm tokenları çek (acil durum)
+     */
+    function emergencyWithdrawAll(address to) external onlyOwner whenPaused {
+        require(to != address(0), "StableSwap: to zero address");
+
+        uint256 balance0 = token0.balanceOf(address(this));
+        uint256 balance1 = token1.balanceOf(address(this));
+
+        if (balance0 > 0) {
+            token0.safeTransfer(to, balance0);
+        }
+        if (balance1 > 0) {
+            token1.safeTransfer(to, balance1);
+        }
+
+        reserve0 = 0;
+        reserve1 = 0;
+
+        emit EmergencyWithdrawAll(to, balance0, balance1);
+    }
+
+    event EmergencyWithdraw(address indexed token, address indexed to, uint256 amount);
+    event EmergencyWithdrawAll(address indexed to, uint256 amount0, uint256 amount1);
 }

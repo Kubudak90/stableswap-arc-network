@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ASSToken} from "./ASSToken.sol";
 import {StakingContract} from "./StakingContract.sol";
 
@@ -11,8 +13,9 @@ import {StakingContract} from "./StakingContract.sol";
  * @title FeeDistributor
  * @notice Swap fee'lerini toplayıp dağıtan kontrat
  * @dev Fee dağılımı: %45 staker, %45 buyback (%10 maaş, %90 burn), %10 treasury
+ * ReentrancyGuard ve Pausable ile güvenli
  */
-contract FeeDistributor is Ownable {
+contract FeeDistributor is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     ASSToken public immutable assToken;
@@ -62,19 +65,37 @@ contract FeeDistributor is Ownable {
         address _salaryAddress,
         address _buybackToken
     ) Ownable(msg.sender) {
+        require(_assToken != address(0), "FeeDistributor: assToken zero address");
+        require(_treasury != address(0), "FeeDistributor: treasury zero address");
+        require(_salaryAddress != address(0), "FeeDistributor: salaryAddress zero address");
+        require(_buybackToken != address(0), "FeeDistributor: buybackToken zero address");
         assToken = ASSToken(_assToken);
         treasury = _treasury;
         salaryAddress = _salaryAddress;
         buybackToken = IERC20(_buybackToken);
-        
+
         require(STAKER_SHARE + BUYBACK_SHARE + TREASURY_SHARE == 10000, "FeeDistributor: Invalid fee shares");
+    }
+
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     /**
      * @notice Swap kontratından fee topla (sadece swap kontratları çağırabilir)
      * @dev Token zaten swap kontratı tarafından transfer edilmiş olmalı
      */
-    function collectFee(address token, uint256 amount) external {
+    function collectFee(address token, uint256 amount) external whenNotPaused {
         require(isSwapContract(msg.sender), "FeeDistributor: Only swap contracts can collect fees");
         require(amount > 0, "FeeDistributor: Amount must be > 0");
         
@@ -95,7 +116,8 @@ contract FeeDistributor is Ownable {
      * @notice Toplanan fee'leri dağıt
      * @param token Fee'nin toplandığı token (stablecoin)
      */
-    function distributeFees(address token) external {
+    function distributeFees(address token) external whenNotPaused nonReentrant {
+        require(token != address(0), "FeeDistributor: token zero address");
         IERC20 feeToken = IERC20(token);
         
         // Gerçek balance'ı kontrol et

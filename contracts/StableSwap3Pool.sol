@@ -4,13 +4,16 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
  * @title StableSwap3Pool
  * @notice 3 token'lı stabilcoin swap - 1:1:1 oranı korur, fee distribution entegre
+ * @dev Ownable, Pausable ve ReentrancyGuard ile güvenli
  */
-contract StableSwap3Pool is Ownable {
+contract StableSwap3Pool is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token0; // tUSDC
@@ -32,21 +35,40 @@ contract StableSwap3Pool is Ownable {
     event FeeDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
 
     constructor(address _token0, address _token1, address _token2) Ownable(msg.sender) {
+        require(_token0 != address(0), "StableSwap3Pool: token0 zero address");
+        require(_token1 != address(0), "StableSwap3Pool: token1 zero address");
+        require(_token2 != address(0), "StableSwap3Pool: token2 zero address");
+        require(_token0 != _token1 && _token1 != _token2 && _token0 != _token2, "StableSwap3Pool: identical tokens");
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
         token2 = IERC20(_token2);
     }
-    
+
     /**
-     * @notice Fee distributor'ı ayarla
+     * @notice Fee distributor'ı ayarla (sadece owner)
      */
     function setFeeDistributor(address _feeDistributor) external onlyOwner {
+        require(_feeDistributor != address(0), "StableSwap3Pool: zero address");
         address oldDistributor = address(feeDistributor);
         feeDistributor = FeeDistributor(_feeDistributor);
         emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
     }
 
-    function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external {
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external whenNotPaused nonReentrant {
         token0.safeTransferFrom(msg.sender, address(this), amount0);
         token1.safeTransferFrom(msg.sender, address(this), amount1);
         token2.safeTransferFrom(msg.sender, address(this), amount2);
@@ -58,7 +80,7 @@ contract StableSwap3Pool is Ownable {
         emit AddLiquidity(msg.sender, amount0, amount1, amount2);
     }
 
-    function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external {
+    function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external whenNotPaused nonReentrant {
         require(reserve0 >= amount0 && reserve1 >= amount1 && reserve2 >= amount2, "Insufficient liquidity");
         
         reserve0 -= amount0;
@@ -77,7 +99,7 @@ contract StableSwap3Pool is Ownable {
      * @param tokenOut 0, 1, or 2 (token0, token1, or token2)
      * @param amountIn Input amount
      */
-    function swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn) external returns (uint256 amountOut) {
+    function swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn) external whenNotPaused nonReentrant returns (uint256 amountOut) {
         require(amountIn > 0, "Invalid amount");
         require(tokenIn != tokenOut, "Same token");
         require(tokenIn < 3 && tokenOut < 3, "Invalid token index");

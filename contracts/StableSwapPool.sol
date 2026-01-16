@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "hardhat/console.sol";
-
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {LPToken} from "./LPToken.sol";
 
 /**
  * @title StableSwapPool (2-coin)
  * @notice Curve-inspired stableswap AMM for stablecoins (low slippage near peg).
  * @dev Fixed-point math with 1e18 scaling. Iterative getD/getY. No oracle.
+ * Pausable ve ReentrancyGuard ile güvenli
  */
-contract StableSwapPool is Ownable {
+contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256 private constant A_MULTIPLIER = 100;     // to allow fractional A changes if needed
@@ -52,7 +53,10 @@ contract StableSwapPool is Ownable {
         uint256 _feeBps,
         address _lpOwner
     ) Ownable(msg.sender) {
+        require(_token0 != address(0), "pool: token0 zero address");
+        require(_token1 != address(0), "pool: token1 zero address");
         require(_token0 != _token1, "pool: same token");
+        require(_lpOwner != address(0), "pool: lpOwner zero address");
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
         decimals0 = _dec0;
@@ -65,6 +69,20 @@ contract StableSwapPool is Ownable {
         lp = new LPToken("StableSwap LP", "sLP");
         LPToken(address(lp)).setPool(address(this));
         lp.transferOwnership(_lpOwner);
+    }
+
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     // ------------------ Views: helpers ------------------
@@ -173,7 +191,7 @@ contract StableSwapPool is Ownable {
 
     // ------------------ Core: liquidity ops ------------------
 
-    function addLiquidity(uint256 amount0, uint256 amount1, uint256 minLpOut) external returns (uint256 lpOut) {
+    function addLiquidity(uint256 amount0, uint256 amount1, uint256 minLpOut) external whenNotPaused nonReentrant returns (uint256 lpOut) {
         require(amount0 > 0 && amount1 > 0, "add: zero amount");
         // transfer in
         token0.safeTransferFrom(msg.sender, address(this), amount0);
@@ -208,7 +226,7 @@ contract StableSwapPool is Ownable {
         emit AddLiquidity(msg.sender, amount0, amount1, lpOut);
     }
 
-    function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1) external returns (uint256 amt0, uint256 amt1) {
+    function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1) external whenNotPaused nonReentrant returns (uint256 amt0, uint256 amt1) {
         require(lpAmount > 0, "remove: zero amount");
         uint256 supply = lp.totalSupply();
         require(supply > 0, "remove: empty");
@@ -244,7 +262,7 @@ contract StableSwapPool is Ownable {
      * @param amountIn amount of input token in its native decimals
      * @param minAmountOut minimum acceptable out
      */
-    function swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut) {
+    function swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut) external whenNotPaused nonReentrant returns (uint256 amountOut) {
         require(amountIn > 0, "swap: zero in");
 
         if (zeroForOne) {

@@ -147,7 +147,7 @@ contract StableSwap is Ownable, Pausable, ReentrancyGuard {
         return (reserve0, reserve1);
     }
 
-    function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256) {
+    function getAmountOut(uint256 amountIn, bool /* zeroForOne */) external pure returns (uint256) {
         if (amountIn == 0) return 0;
 
         // Stabilcoin için 1:1 oran + küçük fee

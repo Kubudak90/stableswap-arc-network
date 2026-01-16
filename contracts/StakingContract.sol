@@ -17,6 +17,9 @@ import {FeeDistributor} from "./FeeDistributor.sol";
 contract StakingContract is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
+    /// @notice Precision for reward calculations
+    uint256 public constant PRECISION = 1e18;
+
     IERC20 public immutable assToken;
     FeeDistributor public immutable feeDistributor;
     
@@ -153,7 +156,7 @@ contract StakingContract is Ownable, ReentrancyGuard, Pausable {
         
         // Reward'ları stake edenlere dağıt
         if (totalStaked > 0) {
-            uint256 rewardPerToken = (actualAmount * 1e18) / totalStaked;
+            uint256 rewardPerToken = (actualAmount * PRECISION) / totalStaked;
             rewardPerTokenStored += rewardPerToken;
         }
     }
@@ -167,7 +170,7 @@ contract StakingContract is Ownable, ReentrancyGuard, Pausable {
         StakerInfo storage staker = stakers[user];
         if (staker.stakedAmount == 0) return;
         
-        uint256 earned = (staker.stakedAmount * rewardPerTokenStored) / 1e18;
+        uint256 earned = (staker.stakedAmount * rewardPerTokenStored) / PRECISION;
         
         // Underflow kontrolü - eğer earned < rewardDebt ise newRewards = 0
         uint256 newRewards = 0;

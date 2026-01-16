@@ -3,12 +3,44 @@ pragma solidity ^0.8.20;
 
 /**
  * @title MultiSigWallet
- * @notice Çoklu imza cüzdanı - kritik işlemler için birden fazla onay gerektirir
- * @dev Gnosis Safe benzeri basitleştirilmiş multi-sig implementasyonu
+ * @author StableSwap Arc Network Team
+ * @notice Multi-signature wallet requiring multiple owner confirmations for transactions
+ * @dev Simplified Gnosis Safe-like implementation for critical protocol operations.
+ *      Provides enhanced security by requiring consensus among multiple parties.
+ *
+ * Key Features:
+ * - Configurable number of required confirmations
+ * - Owner management (add/remove) via multisig consensus
+ * - Optional execution delay for additional security
+ * - Transaction submission, confirmation, revocation, and execution
+ * - Support for ETH transfers and contract calls
+ *
+ * Security Considerations:
+ * - All owner management functions require multisig approval
+ * - Cannot remove owners below quorum threshold
+ * - Transactions cannot be executed twice
+ * - Automatic confirmation by submitter
+ *
+ * Usage Flow:
+ * 1. Owner submits transaction (auto-confirmed)
+ * 2. Other owners confirm the transaction
+ * 3. Once enough confirmations, any owner can execute
  */
 contract MultiSigWallet {
     // ============ EVENTS ============
+
+    /// @notice Emitted when ETH is deposited
+    /// @param sender Address that sent ETH
+    /// @param amount Amount of ETH sent
+    /// @param balance New contract balance
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
+
+    /// @notice Emitted when a new transaction is submitted
+    /// @param owner Owner who submitted
+    /// @param txIndex Transaction index
+    /// @param to Target address
+    /// @param value ETH value
+    /// @param data Call data
     event SubmitTransaction(
         address indexed owner,
         uint256 indexed txIndex,
@@ -16,57 +48,98 @@ contract MultiSigWallet {
         uint256 value,
         bytes data
     );
+
+    /// @notice Emitted when an owner confirms a transaction
+    /// @param owner Owner who confirmed
+    /// @param txIndex Transaction index
     event ConfirmTransaction(address indexed owner, uint256 indexed txIndex);
+
+    /// @notice Emitted when an owner revokes their confirmation
+    /// @param owner Owner who revoked
+    /// @param txIndex Transaction index
     event RevokeConfirmation(address indexed owner, uint256 indexed txIndex);
+
+    /// @notice Emitted when a transaction is executed
+    /// @param owner Owner who executed
+    /// @param txIndex Transaction index
     event ExecuteTransaction(address indexed owner, uint256 indexed txIndex);
+
+    /// @notice Emitted when a new owner is added
+    /// @param owner New owner address
     event OwnerAdded(address indexed owner);
+
+    /// @notice Emitted when an owner is removed
+    /// @param owner Removed owner address
     event OwnerRemoved(address indexed owner);
+
+    /// @notice Emitted when confirmation requirement changes
+    /// @param required New required number of confirmations
     event RequirementChanged(uint256 required);
 
     // ============ STATE ============
+
+    /// @notice Array of owner addresses
     address[] public owners;
+
+    /// @notice Mapping to check if address is an owner
     mapping(address => bool) public isOwner;
+
+    /// @notice Number of confirmations required to execute a transaction
     uint256 public numConfirmationsRequired;
 
+    /// @notice Transaction struct containing all transaction details
     struct Transaction {
-        address to;
-        uint256 value;
-        bytes data;
-        bool executed;
-        uint256 numConfirmations;
-        uint256 submitTime;
+        address to;           // Target address
+        uint256 value;        // ETH value to send
+        bytes data;           // Call data
+        bool executed;        // Whether transaction has been executed
+        uint256 numConfirmations; // Number of confirmations received
+        uint256 submitTime;   // Timestamp when submitted
     }
 
-    // txIndex => owner => bool
+    /// @notice Mapping of transaction index => owner => confirmation status
     mapping(uint256 => mapping(address => bool)) public isConfirmed;
 
+    /// @notice Array of all transactions
     Transaction[] public transactions;
 
-    // Execution delay (opsiyonel güvenlik)
-    uint256 public executionDelay = 0; // Default: anında çalıştırma
+    /// @notice Optional delay between confirmation and execution
+    uint256 public executionDelay = 0;
 
     // ============ MODIFIERS ============
+
+    /// @notice Restricts function to owners only
     modifier onlyOwner() {
         require(isOwner[msg.sender], "MultiSig: not owner");
         _;
     }
 
+    /// @notice Ensures transaction exists
     modifier txExists(uint256 _txIndex) {
         require(_txIndex < transactions.length, "MultiSig: tx does not exist");
         _;
     }
 
+    /// @notice Ensures transaction hasn't been executed
     modifier notExecuted(uint256 _txIndex) {
         require(!transactions[_txIndex].executed, "MultiSig: tx already executed");
         _;
     }
 
+    /// @notice Ensures caller hasn't already confirmed
     modifier notConfirmed(uint256 _txIndex) {
         require(!isConfirmed[_txIndex][msg.sender], "MultiSig: tx already confirmed");
         _;
     }
 
     // ============ CONSTRUCTOR ============
+
+    /**
+     * @notice Initializes the MultiSigWallet with initial owners and confirmation requirement
+     * @dev All owners must be unique and non-zero. Required confirmations must be valid.
+     * @param _owners Array of initial owner addresses
+     * @param _numConfirmationsRequired Number of confirmations needed to execute
+     */
     constructor(address[] memory _owners, uint256 _numConfirmationsRequired) {
         require(_owners.length > 0, "MultiSig: owners required");
         require(
@@ -75,7 +148,8 @@ contract MultiSigWallet {
             "MultiSig: invalid number of required confirmations"
         );
 
-        for (uint256 i = 0; i < _owners.length; i++) {
+        uint256 ownersLength = _owners.length;
+        for (uint256 i = 0; i < ownersLength; ) {
             address owner = _owners[i];
 
             require(owner != address(0), "MultiSig: invalid owner");
@@ -83,12 +157,15 @@ contract MultiSigWallet {
 
             isOwner[owner] = true;
             owners.push(owner);
+            unchecked { ++i; }
         }
 
         numConfirmationsRequired = _numConfirmationsRequired;
     }
 
     // ============ RECEIVE ============
+
+    /// @notice Allows contract to receive ETH
     receive() external payable {
         emit Deposit(msg.sender, msg.value, address(this).balance);
     }
@@ -96,10 +173,12 @@ contract MultiSigWallet {
     // ============ CORE FUNCTIONS ============
 
     /**
-     * @notice Yeni işlem öner
-     * @param _to Hedef adres
-     * @param _value Gönderilecek ETH
-     * @param _data Çağrılacak fonksiyon datası
+     * @notice Submits a new transaction for approval
+     * @dev Automatically confirms the transaction for the submitter
+     * @param _to Target address for the transaction
+     * @param _value Amount of ETH to send
+     * @param _data Encoded function call data
+     * @return txIndex Index of the submitted transaction
      */
     function submitTransaction(
         address _to,
@@ -123,15 +202,16 @@ contract MultiSigWallet {
 
         emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
 
-        // Otomatik olarak öneren de onaylasın
+        // Automatically confirm for submitter
         confirmTransaction(txIndex);
 
         return txIndex;
     }
 
     /**
-     * @notice İşlemi onayla
-     * @param _txIndex İşlem indeksi
+     * @notice Confirms a pending transaction
+     * @dev Each owner can only confirm once per transaction
+     * @param _txIndex Index of the transaction to confirm
      */
     function confirmTransaction(uint256 _txIndex)
         public
@@ -148,8 +228,9 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice İşlemi yürüt (yeterli onay varsa)
-     * @param _txIndex İşlem indeksi
+     * @notice Executes a transaction after sufficient confirmations
+     * @dev Requires numConfirmationsRequired confirmations and respects execution delay
+     * @param _txIndex Index of the transaction to execute
      */
     function executeTransaction(uint256 _txIndex)
         public
@@ -164,7 +245,7 @@ contract MultiSigWallet {
             "MultiSig: cannot execute tx - not enough confirmations"
         );
 
-        // Execution delay kontrolü
+        // Check execution delay if set
         if (executionDelay > 0) {
             require(
                 block.timestamp >= transaction.submitTime + executionDelay,
@@ -183,8 +264,9 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice Onayı geri çek
-     * @param _txIndex İşlem indeksi
+     * @notice Revokes a previous confirmation
+     * @dev Can only revoke if transaction hasn't been executed
+     * @param _txIndex Index of the transaction
      */
     function revokeConfirmation(uint256 _txIndex)
         public
@@ -204,8 +286,9 @@ contract MultiSigWallet {
     // ============ OWNER MANAGEMENT ============
 
     /**
-     * @notice Yeni owner ekle (multi-sig onayı gerektirir)
-     * @dev Bu fonksiyon submitTransaction ile çağrılmalı
+     * @notice Adds a new owner to the wallet
+     * @dev Must be called via multisig (submitTransaction to this contract)
+     * @param _owner Address of the new owner
      */
     function addOwner(address _owner) external {
         require(msg.sender == address(this), "MultiSig: only via multisig");
@@ -219,8 +302,9 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice Owner kaldır (multi-sig onayı gerektirir)
-     * @dev Bu fonksiyon submitTransaction ile çağrılmalı
+     * @notice Removes an owner from the wallet
+     * @dev Must be called via multisig. Cannot break quorum.
+     * @param _owner Address of the owner to remove
      */
     function removeOwner(address _owner) external {
         require(msg.sender == address(this), "MultiSig: only via multisig");
@@ -229,21 +313,24 @@ contract MultiSigWallet {
 
         isOwner[_owner] = false;
 
-        // owners dizisinden kaldır
-        for (uint256 i = 0; i < owners.length; i++) {
+        // Remove from owners array
+        uint256 length = owners.length;
+        for (uint256 i = 0; i < length; ) {
             if (owners[i] == _owner) {
-                owners[i] = owners[owners.length - 1];
+                owners[i] = owners[length - 1];
                 owners.pop();
                 break;
             }
+            unchecked { ++i; }
         }
 
         emit OwnerRemoved(_owner);
     }
 
     /**
-     * @notice Gerekli onay sayısını değiştir (multi-sig onayı gerektirir)
-     * @dev Bu fonksiyon submitTransaction ile çağrılmalı
+     * @notice Changes the number of required confirmations
+     * @dev Must be called via multisig. Cannot exceed owner count.
+     * @param _required New number of required confirmations
      */
     function changeRequirement(uint256 _required) external {
         require(msg.sender == address(this), "MultiSig: only via multisig");
@@ -256,8 +343,9 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice Execution delay'i değiştir (multi-sig onayı gerektirir)
-     * @dev Bu fonksiyon submitTransaction ile çağrılmalı
+     * @notice Sets the execution delay
+     * @dev Must be called via multisig. Maximum 7 days.
+     * @param _delay New delay in seconds
      */
     function setExecutionDelay(uint256 _delay) external {
         require(msg.sender == address(this), "MultiSig: only via multisig");
@@ -268,14 +356,32 @@ contract MultiSigWallet {
 
     // ============ VIEW FUNCTIONS ============
 
+    /**
+     * @notice Returns all owner addresses
+     * @return Array of owner addresses
+     */
     function getOwners() public view returns (address[] memory) {
         return owners;
     }
 
+    /**
+     * @notice Returns the total number of transactions
+     * @return Number of transactions
+     */
     function getTransactionCount() public view returns (uint256) {
         return transactions.length;
     }
 
+    /**
+     * @notice Returns details of a specific transaction
+     * @param _txIndex Index of the transaction
+     * @return to Target address
+     * @return value ETH value
+     * @return data Call data
+     * @return executed Whether executed
+     * @return numConfirmations Number of confirmations
+     * @return submitTime Submission timestamp
+     */
     function getTransaction(uint256 _txIndex)
         public
         view
@@ -301,18 +407,23 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice Bekleyen (onay bekleyen) işlem sayısı
+     * @notice Returns count of pending (unexecuted) transactions
+     * @return count Number of pending transactions
      */
     function getPendingTransactionCount() public view returns (uint256 count) {
-        for (uint256 i = 0; i < transactions.length; i++) {
+        uint256 length = transactions.length;
+        for (uint256 i = 0; i < length; ) {
             if (!transactions[i].executed) {
-                count++;
+                unchecked { ++count; }
             }
+            unchecked { ++i; }
         }
     }
 
     /**
-     * @notice İşlem çalıştırılabilir mi kontrol et
+     * @notice Checks if a transaction can be executed
+     * @param _txIndex Index of the transaction
+     * @return True if transaction can be executed
      */
     function canExecute(uint256 _txIndex) public view returns (bool) {
         if (_txIndex >= transactions.length) return false;
@@ -332,7 +443,10 @@ contract MultiSigWallet {
     }
 
     /**
-     * @notice Belirli bir owner'ın işlemi onaylayıp onaylamadığını kontrol et
+     * @notice Checks if an owner has confirmed a transaction
+     * @param _txIndex Index of the transaction
+     * @param _owner Owner address to check
+     * @return True if owner has confirmed
      */
     function hasConfirmed(uint256 _txIndex, address _owner) public view returns (bool) {
         return isConfirmed[_txIndex][_owner];
@@ -341,8 +455,11 @@ contract MultiSigWallet {
     // ============ HELPER FUNCTIONS ============
 
     /**
-     * @notice Fonksiyon çağrısı için data oluştur
-     * @dev Frontend'den kullanım için yardımcı fonksiyon
+     * @notice Encodes transaction data for contract calls
+     * @dev Utility function for frontend integration
+     * @param _functionSignature Function signature (e.g., "transfer(address,uint256)")
+     * @param _params ABI-encoded parameters
+     * @return Encoded transaction data
      */
     function encodeTransactionData(
         string memory _functionSignature,

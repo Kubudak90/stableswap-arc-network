@@ -168,7 +168,7 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
         // Ann = A * n^n = A * 4
         uint256 Ann = _A * 4;
 
-        for (uint256 i = 0; i < MAX_ITER; i++) {
+        for (uint256 i = 0; i < MAX_ITER; ++i) {
             // D_P = D^3 / (4 * x * y)
             // compute D_P stepwise to avoid overflow (uint256 with 1e18 scale)
             // D^2
@@ -205,7 +205,7 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
         uint256 _xNew,
         uint256 _D,
         uint256 _A
-    ) internal view returns (uint256 yNew) {
+    ) internal pure returns (uint256 yNew) {
         // From invariant for 2 coins
         // We solve for y via iterative method:
         // c = D^3 / (4 * A * 4 * xNew) = D^3 / (16 * A * xNew)
@@ -223,7 +223,7 @@ contract StableSwapPool is Ownable, Pausable, ReentrancyGuard {
         // initial guess
         yNew = _D;
 
-        for (uint256 i = 0; i < MAX_ITER; i++) {
+        for (uint256 i = 0; i < MAX_ITER; ++i) {
             uint256 yPrev = yNew;
             // y = (y^2 + c) / (2y + b - D)
             uint256 y2 = yNew * yNew;

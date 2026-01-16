@@ -55,6 +55,12 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
     uint256 public slippageTolerance = 500; // 5% default
     uint256 public constant MAX_SLIPPAGE = 2000; // Max 20%
 
+    // Fee distribution percentages (basis points)
+    uint256 public constant SALARY_PERCENTAGE = 1000;    // %10 maaş payı
+    uint256 public constant BURN_PERCENTAGE = 9000;      // %90 burn oranı
+    uint256 public constant PERCENTAGE_BASE = 10000;     // Yüzde hesaplama tabanı
+    uint256 public constant SWAP_DEADLINE = 300;         // 5 dakika deadline (saniye)
+
     // İstatistikler
     uint256 public totalBuybackAmount;
     uint256 public totalBurned;
@@ -134,7 +140,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
         uint256 buybackAmount = buybackBalance;
 
         // Buyback'in %10'u maaş
-        uint256 salaryAmount = (buybackAmount * 1000) / 10000; // %10
+        uint256 salaryAmount = (buybackAmount * SALARY_PERCENTAGE) / PERCENTAGE_BASE;
         uint256 swapAmount = buybackAmount - salaryAmount;
 
         // Stablecoin'i maaş adresine gönder
@@ -151,7 +157,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
             assPurchased = _swapBuybackTokenForASS(swapAmount);
             if (assPurchased > 0) {
                 // Satın alınan ASS token'ların %90'ını yak
-                burned = (assPurchased * 9000) / 10000; // %90
+                burned = (assPurchased * BURN_PERCENTAGE) / PERCENTAGE_BASE;
                 if (burned > 0) {
                     _burnASS(burned);
                 }
@@ -186,7 +192,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
         uint256 stablecoinBalance = buybackToken.balanceOf(address(this));
 
         // %90'ını burn et
-        uint256 burnAmount = (assAmount * 9000) / 10000;
+        uint256 burnAmount = (assAmount * BURN_PERCENTAGE) / PERCENTAGE_BASE;
         if (burnAmount > 0) {
             _burnASS(burnAmount);
         }
@@ -199,7 +205,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice FeeDistributor'dan gelen buyback fonksiyonu
      */
-    function receiveBuybackFunds(uint256 amount) external {
+    function receiveBuybackFunds(uint256 amount) external view {
         require(
             msg.sender == address(feeDistributor),
             "AutoBuyback: Only fee distributor"
@@ -234,7 +240,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
         if (expectedOut == 0) return 0;
 
         // Slippage tolerance ile minimum output hesapla
-        uint256 minAmountOut = (expectedOut * (10000 - slippageTolerance)) / 10000;
+        uint256 minAmountOut = (expectedOut * (PERCENTAGE_BASE - slippageTolerance)) / PERCENTAGE_BASE;
 
         // Approve swap router
         buybackToken.forceApprove(address(swapRouter), amount);
@@ -245,7 +251,7 @@ contract AutoBuyback is Ownable, Pausable, ReentrancyGuard {
             minAmountOut,
             path,
             address(this),
-            block.timestamp + 300 // 5 dakika deadline
+            block.timestamp + SWAP_DEADLINE
         ) returns (uint256[] memory amounts) {
             // Reset approval
             buybackToken.forceApprove(address(swapRouter), 0);

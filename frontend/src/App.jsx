@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import SwapPanel from './components/SwapPanel'
-import PoolPanel from './components/PoolPanel'
-import Swap3PoolPanel from './components/Swap3PoolPanel'
-import Pool3Panel from './components/Pool3Panel'
-import UnifiedSwapPanel from './components/UnifiedSwapPanel'
-import UnifiedPoolPanel from './components/UnifiedPoolPanel'
-import FaucetPanel from './components/FaucetPanel'
-import StakingPanel from './components/StakingPanel'
-import Header from './components/Header'
 import { ethers } from 'ethers'
 import { CONTRACTS, NETWORK, ABIS } from './config'
+
+// New UI Components
+import Header from './components/ui/Header'
+import SwapCard from './components/ui/SwapCard'
+import PoolCard from './components/ui/PoolCard'
+
+// Legacy Components (for routes that aren't redesigned yet)
+import FaucetPanel from './components/FaucetPanel'
+import StakingPanel from './components/StakingPanel'
+
+// Styles
+import './styles/shadcn.css'
+
+// Page wrapper component
+const PageContainer = ({ children }) => (
+  <div className="page-container">
+    {children}
+  </div>
+)
 
 function App() {
   const [provider, setProvider] = useState(null)
@@ -64,7 +74,6 @@ function App() {
 
         if (chainId === NETWORK.chainIdHex) {
           console.log('Now on Arc Testnet!')
-          // Reinitialize contracts if wallet is connected
           if (account) {
             try {
               const newProvider = new ethers.BrowserProvider(window.ethereum)
@@ -105,12 +114,11 @@ function App() {
 
     try {
       if (!window.ethereum) {
-        throw new Error('MetaMask bulunamadı! Lütfen MetaMask yükleyin.')
+        throw new Error('MetaMask not found! Please install MetaMask.')
       }
 
       console.log('Starting wallet connection...')
 
-      // Request account access
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       })
@@ -122,7 +130,6 @@ function App() {
       const userAccount = accounts[0]
       console.log('Account connected:', userAccount)
 
-      // Create provider and signer
       const newProvider = new ethers.BrowserProvider(window.ethereum)
       const newSigner = await newProvider.getSigner()
 
@@ -130,23 +137,19 @@ function App() {
       setSigner(newSigner)
       setAccount(userAccount)
 
-      // Handle network switching
       await ensureArcTestnet()
 
-      // Double check we're on the right network
       const finalChainId = await window.ethereum.request({ method: 'eth_chainId' })
       if (finalChainId !== NETWORK.chainIdHex) {
-        throw new Error('Arc Testnet\'e geçiş yapılamadı. Lütfen manuel olarak geçin.')
+        throw new Error('Could not switch to Arc Testnet. Please switch manually.')
       }
 
-      // Initialize contracts
       await initializeContracts(newSigner)
 
       console.log('Wallet connected successfully')
     } catch (err) {
       console.error('Wallet connection error:', err)
       setError(err.message)
-      alert('Cüzdan bağlanamadı: ' + err.message)
     } finally {
       setIsLoading(false)
     }
@@ -188,7 +191,6 @@ function App() {
             })
             console.log('Arc Testnet added successfully')
 
-            // Try to switch again after adding
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: NETWORK.chainIdHex }]
@@ -196,10 +198,10 @@ function App() {
             console.log('Successfully switched to Arc Testnet after adding')
           } catch (addError) {
             console.error('Could not add Arc Testnet:', addError)
-            throw new Error('Arc Testnet eklenemedi. Lütfen manuel olarak ekleyin.')
+            throw new Error('Could not add Arc Testnet. Please add it manually.')
           }
         } else {
-          throw new Error('Arc Testnet\'e geçiş yapılamadı. Lütfen manuel olarak geçin.')
+          throw new Error('Could not switch to Arc Testnet. Please switch manually.')
         }
       }
     } catch (err) {
@@ -219,38 +221,38 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className="shadcn-app">
         <Header
           account={account}
           connectWallet={connectWallet}
           disconnectWallet={disconnectWallet}
-          contracts={contracts}
-          currentChainId={currentChainId}
           isLoading={isLoading}
-          error={error}
         />
+
         {error && (
-          <div className="error-banner">
-            {error}
-            <button onClick={() => setError(null)}>×</button>
+          <div className="alert alert-error" style={{
+            position: 'fixed',
+            top: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            maxWidth: '90%'
+          }}>
+            <span className="alert-content">{error}</span>
+            <button className="alert-close" onClick={() => setError(null)}>&times;</button>
           </div>
         )}
+
         <Routes>
           <Route path="/" element={
-            <UnifiedSwapPanel
-              contracts={contracts}
-              account={account}
-              provider={provider}
-              signer={signer}
-            />
+            <PageContainer>
+              <SwapCard contracts={contracts} account={account} />
+            </PageContainer>
           } />
           <Route path="/pool" element={
-            <UnifiedPoolPanel
-              contracts={contracts}
-              account={account}
-              provider={provider}
-              signer={signer}
-            />
+            <PageContainer>
+              <PoolCard contracts={contracts} account={account} />
+            </PageContainer>
           } />
           <Route path="/staking" element={
             <StakingPanel
@@ -266,9 +268,6 @@ function App() {
               account={account}
             />
           } />
-          {/* Legacy routes */}
-          <Route path="/pool-old-2" element={<PoolPanel contracts={contracts} account={account} />} />
-          <Route path="/pool-old-3" element={<Pool3Panel contracts={contracts} account={account} />} />
         </Routes>
       </div>
     </Router>

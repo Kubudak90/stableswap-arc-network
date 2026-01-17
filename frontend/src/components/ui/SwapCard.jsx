@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { CONTRACTS, SETTINGS, getExplorerUrl } from '../../config'
 import { RainbowButton } from './RainbowButton'
-import { BorderBeam } from './BorderBeam'
 
 // SVG Icons
 const SettingsIcon = () => (
@@ -103,9 +102,16 @@ const TokenInput = ({
           }}
           readOnly={readOnly}
         />
-        <button className="token-selector" onClick={onTokenClick}>
+        <button className="token-selector" onClick={onTokenClick} style={{ color: '#ffffff' }}>
           <TokenIcon symbol={token.symbol} size={28} />
-          <span className="token-symbol" style={{ color: '#ffffff', opacity: 1 }}>{token.symbol}</span>
+          <span style={{
+            fontSize: '1rem',
+            fontWeight: 700,
+            color: '#ffffff',
+            marginLeft: '4px'
+          }}>
+            {token.symbol}
+          </span>
           <ChevronDownIcon />
         </button>
       </div>
@@ -381,7 +387,6 @@ function SwapCard({ contracts, account }) {
 
   return (
     <div className="swap-card">
-      <BorderBeam duration={8} size={150} colorFrom="#ffffff" colorTo="#888888" />
       {/* Header */}
       <div className="swap-card-header">
         <h2 className="swap-card-title">Swap</h2>

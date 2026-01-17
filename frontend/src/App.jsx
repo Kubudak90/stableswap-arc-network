@@ -202,37 +202,36 @@ function App() {
       console.log('Successfully switched to Arc Testnet')
       return true
     } catch (switchError) {
-      console.log('Switch error code:', switchError.code)
+      console.log('Switch error:', switchError.code, switchError.message)
 
       // User rejected the switch
       if (switchError.code === 4001) {
         throw new Error('Please switch to Arc Testnet to use this app.')
       }
 
-      // Network not found, try to add it
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: NETWORK.chainIdHex,
-              chainName: NETWORK.name,
-              rpcUrls: [NETWORK.rpcUrl],
-              nativeCurrency: NETWORK.nativeCurrency,
-              blockExplorerUrls: [NETWORK.explorerUrl]
-            }]
-          })
-          console.log('Arc Testnet added successfully')
-          return true
-        } catch (addError) {
-          if (addError.code === 4001) {
-            throw new Error('Please add Arc Testnet to use this app.')
-          }
-          throw new Error('Could not add Arc Testnet: ' + addError.message)
+      // Network not found or unrecognized - try to add it
+      // Handle both 4902 and other "unrecognized chain" errors
+      console.log('Trying to add Arc Testnet...')
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: NETWORK.chainIdHex,
+            chainName: NETWORK.name,
+            rpcUrls: [NETWORK.rpcUrl],
+            nativeCurrency: NETWORK.nativeCurrency,
+            blockExplorerUrls: [NETWORK.explorerUrl]
+          }]
+        })
+        console.log('Arc Testnet added successfully')
+        return true
+      } catch (addError) {
+        console.log('Add error:', addError.code, addError.message)
+        if (addError.code === 4001) {
+          throw new Error('Please add Arc Testnet to use this app.')
         }
+        throw new Error('Could not add Arc Testnet: ' + addError.message)
       }
-
-      throw new Error('Could not switch network: ' + switchError.message)
     }
   }
 

@@ -6,8 +6,8 @@
 // Network Configuration
 export const NETWORK = {
   name: import.meta.env.VITE_NETWORK_NAME || 'Arc Testnet',
-  chainId: parseInt(import.meta.env.VITE_CHAIN_ID || '5050194'),
-  chainIdHex: '0x' + parseInt(import.meta.env.VITE_CHAIN_ID || '5050194').toString(16),
+  chainId: parseInt(import.meta.env.VITE_CHAIN_ID || '5042002'),
+  chainIdHex: '0x' + parseInt(import.meta.env.VITE_CHAIN_ID || '5042002').toString(16),
   rpcUrl: import.meta.env.VITE_RPC_URL || 'https://rpc.testnet.arc.network',
   explorerUrl: import.meta.env.VITE_EXPLORER_URL || 'https://testnet.arcscan.app',
   nativeCurrency: {

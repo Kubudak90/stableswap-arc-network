@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { CONTRACTS, getExplorerUrl } from '../../config'
+import { RainbowButton } from './RainbowButton'
 
 // SVG Icons
 const PlusIcon = () => (
@@ -122,7 +123,7 @@ const PoolTokenInput = ({ token, value, onChange, balance, onMaxClick, disabled 
           borderRadius: '20px'
         }}>
           <TokenIcon symbol={token.symbol} size={28} />
-          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>
+          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>
             {token.symbol}
           </span>
         </div>
@@ -167,7 +168,7 @@ const PoolSelect = ({ selectedPool, onSelect }) => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <StackedTokenIcons tokenIndices={selectedPool.tokens} size={28} />
-          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>
+          <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>
             {selectedPool.name}
           </span>
         </div>
@@ -212,7 +213,7 @@ const PoolSelect = ({ selectedPool, onSelect }) => {
               onMouseLeave={(e) => e.target.style.background = selectedPool.id === pool.id ? 'var(--background-hover)' : 'transparent'}
             >
               <StackedTokenIcons tokenIndices={pool.tokens} size={28} />
-              <span style={{ flex: 1, textAlign: 'left', fontSize: '1rem', fontWeight: '500', color: 'white' }}>
+              <span style={{ flex: 1, textAlign: 'left', fontSize: '1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
                 {pool.name}
               </span>
               {selectedPool.id === pool.id && <CheckIcon />}
@@ -536,18 +537,18 @@ function PoolCard({ contracts, account }) {
       )}
 
       {/* Action Button */}
-      <button
-        className="swap-btn swap-btn-primary"
+      <RainbowButton
         onClick={activeTab === 'add' ? handleAddLiquidity : handleRemoveLiquidity}
         disabled={buttonState.disabled}
+        style={{ width: '100%', padding: '16px 24px', fontSize: '1.1rem', fontWeight: 600 }}
       >
         {loading ? (
-          <span className="swap-btn-loading">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className="spinner"></span>
             {buttonState.text}
           </span>
         ) : buttonState.text}
-      </button>
+      </RainbowButton>
     </div>
   )
 }

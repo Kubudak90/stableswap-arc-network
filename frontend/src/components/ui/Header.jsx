@@ -20,28 +20,19 @@ const WarningIcon = () => (
 
 // Logo Component
 const Logo = () => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <div
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <img
+      src="/logo.svg"
+      alt="Arc Stable Swap"
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: '12px',
-        background: 'linear-gradient(135deg, #fc72ff 0%, #4c82fb 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 700,
-        fontSize: '1.1rem',
-        color: 'white',
-        boxShadow: '0 4px 12px rgba(252, 114, 255, 0.3)'
+        width: 40,
+        height: 40,
       }}
-    >
-      A
-    </div>
+    />
     <span style={{
       fontSize: '1.25rem',
       fontWeight: 700,
-      background: 'linear-gradient(135deg, #fc72ff 0%, #4c82fb 100%)',
+      background: 'linear-gradient(135deg, #2196F3 0%, #9C27B0 50%, #00BCD4 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent'
     }}>

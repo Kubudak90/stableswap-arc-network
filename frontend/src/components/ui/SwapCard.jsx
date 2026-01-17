@@ -328,8 +328,10 @@ function SwapCard({ contracts, account }) {
       // Swap
       let swapTx
       if (use3Pool) {
-        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei, 0)
+        // 3Pool swap: (uint8 tokenIn, uint8 tokenOut, uint256 amountIn)
+        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei)
       } else {
+        // 2Pool swap: (bool zeroForOne, uint256 amountIn)
         const zeroForOne = tokenInIndex === 0
         swapTx = await swapContract.swap(zeroForOne, amountInWei)
       }

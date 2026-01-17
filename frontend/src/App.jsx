@@ -76,23 +76,41 @@ function App() {
             try {
               const newProvider = new ethers.BrowserProvider(window.ethereum)
               const newSigner = await newProvider.getSigner()
+              setProvider(newProvider)
+              setSigner(newSigner)
               await initializeContracts(newSigner)
+              setError(null)
             } catch (err) {
               console.error('Failed to reinitialize on chain change:', err)
+              setError('Failed to reinitialize contracts. Please refresh the page.')
             }
           }
         } else {
           console.log('Not on Arc Testnet, current chain:', chainId)
           setError('Please switch to Arc Testnet')
+          // Clear contracts when on wrong network
+          setContracts({})
         }
       }
 
-      const handleAccountsChanged = (accounts) => {
+      const handleAccountsChanged = async (accounts) => {
         console.log('Accounts changed:', accounts)
         if (accounts.length === 0) {
           disconnectWallet()
         } else if (accounts[0] !== account) {
           setAccount(accounts[0])
+          // Reinitialize contracts for new account
+          if (signer) {
+            try {
+              const newProvider = new ethers.BrowserProvider(window.ethereum)
+              const newSigner = await newProvider.getSigner()
+              setProvider(newProvider)
+              setSigner(newSigner)
+              await initializeContracts(newSigner)
+            } catch (err) {
+              console.error('Failed to reinitialize on account change:', err)
+            }
+          }
         }
       }
 
@@ -104,7 +122,7 @@ function App() {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
       }
     }
-  }, [account])
+  }, [account, signer])
 
   const connectWallet = async () => {
     setIsLoading(true)
@@ -128,19 +146,22 @@ function App() {
       const userAccount = accounts[0]
       console.log('Account connected:', userAccount)
 
-      const newProvider = new ethers.BrowserProvider(window.ethereum)
-      const newSigner = await newProvider.getSigner()
-
-      setProvider(newProvider)
-      setSigner(newSigner)
-      setAccount(userAccount)
-
+      // First ensure we're on the correct network
       await ensureArcTestnet()
 
       const finalChainId = await window.ethereum.request({ method: 'eth_chainId' })
       if (finalChainId !== NETWORK.chainIdHex) {
         throw new Error('Could not switch to Arc Testnet. Please switch manually.')
       }
+
+      // Create provider and signer AFTER network switch to ensure correct network
+      const newProvider = new ethers.BrowserProvider(window.ethereum)
+      const newSigner = await newProvider.getSigner()
+
+      setProvider(newProvider)
+      setSigner(newSigner)
+      setAccount(userAccount)
+      setCurrentChainId(finalChainId)
 
       await initializeContracts(newSigner)
 
@@ -225,6 +246,7 @@ function App() {
           connectWallet={connectWallet}
           disconnectWallet={disconnectWallet}
           isLoading={isLoading}
+          currentChainId={currentChainId}
         />
 
         {error && (

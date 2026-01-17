@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { NETWORK } from '../../config'
 import { ThemeToggler } from './ThemeToggler'
+import { InteractiveHoverButton } from './InteractiveHoverButton'
 
 // Network Icon
 const NetworkIcon = () => (
@@ -70,28 +71,16 @@ const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
   }
 
   return (
-    <button
+    <InteractiveHoverButton
       onClick={onAddNetwork}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        padding: '8px 12px',
-        background: isHovered ? 'rgba(255, 179, 71, 0.2)' : 'rgba(255, 179, 71, 0.1)',
-        border: '1px solid rgba(255, 179, 71, 0.3)',
-        borderRadius: '12px',
-        color: '#ffb347',
-        fontSize: '0.875rem',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease'
+        border: '1px solid #f59e0b',
+        color: '#f59e0b'
       }}
     >
       <WarningIcon />
       Switch to Arc
-    </button>
+    </InteractiveHoverButton>
   )
 }
 
@@ -155,28 +144,9 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
   }
 
   return (
-    <button
-      onClick={onConnect}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '10px 20px',
-        background: isHovered ? 'var(--primary-hover)' : 'var(--primary)',
-        border: 'none',
-        borderRadius: '16px',
-        color: 'black',
-        fontSize: '0.95rem',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: isHovered ? '0 0 20px rgba(252, 114, 255, 0.4)' : 'none'
-      }}
-    >
+    <InteractiveHoverButton onClick={onConnect}>
       Connect Wallet
-    </button>
+    </InteractiveHoverButton>
   )
 }
 

@@ -193,14 +193,20 @@
   border-radius: var(--radius-full);
   padding: var(--spacing-xs) var(--spacing-md) var(--spacing-xs) var(--spacing-xs);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background 150ms ease, border-color 150ms ease;
   flex-shrink: 0;
-  color: var(--text-primary);
+  color: #ffffff !important;
 }
 
 .token-selector:hover {
-  background: var(--background-hover);
-  border-color: var(--border-hover);
+  background: #3d3d4d;
+  border-color: #4d4d5d;
+}
+
+.token-selector span,
+.token-selector .token-symbol {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 .token-icon {

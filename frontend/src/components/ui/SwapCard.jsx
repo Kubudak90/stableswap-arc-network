@@ -103,7 +103,7 @@ const TokenInput = ({
         />
         <button className="token-selector" onClick={onTokenClick}>
           <TokenIcon symbol={token.symbol} size={28} />
-          <span className="token-symbol">{token.symbol}</span>
+          <span className="token-symbol" style={{ color: '#ffffff', opacity: 1 }}>{token.symbol}</span>
           <ChevronDownIcon />
         </button>
       </div>

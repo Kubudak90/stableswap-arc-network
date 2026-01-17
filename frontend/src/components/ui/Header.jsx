@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { NETWORK } from '../../config'
+import { ThemeToggler } from './ThemeToggler'
 
 // Network Icon
 const NetworkIcon = () => (
@@ -29,13 +30,7 @@ const Logo = () => (
         height: 40,
       }}
     />
-    <span style={{
-      fontSize: '1.25rem',
-      fontWeight: 700,
-      background: 'linear-gradient(135deg, #2196F3 0%, #9C27B0 50%, #00BCD4 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent'
-    }}>
+    <span className="header-logo-text">
       ArcSwap
     </span>
   </div>
@@ -287,13 +282,13 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
   }
 
   return (
-    <header style={{
+    <header className="header" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       zIndex: 100,
-      background: 'rgba(13, 13, 13, 0.8)',
+      background: 'var(--background)',
       backdropFilter: 'blur(12px)',
       borderBottom: '1px solid var(--border)'
     }}>
@@ -326,12 +321,13 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
           <NavLink to="/faucet">Faucet</NavLink>
         </nav>
 
-        {/* Right - Network + Wallet */}
+        {/* Right - Theme + Network + Wallet */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px'
         }}>
+          <ThemeToggler />
           <NetworkButton
             isCorrectNetwork={isCorrectNetwork}
             onAddNetwork={handleAddNetwork}

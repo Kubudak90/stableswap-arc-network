@@ -1,38 +1,30 @@
-/* ==================== SHADCN/UNISWAP STYLE VARIABLES ==================== */
-:root {
-  /* Colors - Dark Theme (Uniswap-like) */
-  --background: #0d0d0d;
-  --background-secondary: #131313;
-  --background-tertiary: #1a1a1a;
-  --background-hover: #222222;
+/* ==================== BLACK & WHITE THEME + MAGICUI ==================== */
 
-  --card: #191919;
-  --card-hover: #1f1f1f;
-  --card-border: #2a2a2a;
+/* Dark Theme (Default) */
+:root,
+[data-theme="dark"] {
+  --background: #000000;
+  --background-secondary: #0a0a0a;
+  --background-tertiary: #111111;
+  --background-hover: #1a1a1a;
 
-  --primary: #fc72ff;
-  --primary-hover: #fd9aff;
-  --primary-muted: rgba(252, 114, 255, 0.12);
-
-  --secondary: #4c82fb;
-  --secondary-hover: #6e9cfc;
-
-  --accent: #00d395;
-  --accent-hover: #33dfa8;
+  --card: #0a0a0a;
+  --card-hover: #111111;
+  --card-border: #222222;
 
   --text-primary: #ffffff;
-  --text-secondary: #9b9b9b;
-  --text-tertiary: #5e5e5e;
+  --text-secondary: #888888;
+  --text-tertiary: #555555;
 
-  --border: #2a2a2a;
-  --border-hover: #3a3a3a;
+  --border: #222222;
+  --border-hover: #333333;
 
-  --success: #00d395;
-  --success-bg: rgba(0, 211, 149, 0.12);
-  --error: #ff5f52;
-  --error-bg: rgba(255, 95, 82, 0.12);
-  --warning: #ffb347;
-  --warning-bg: rgba(255, 179, 71, 0.12);
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --error: #ef4444;
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -51,18 +43,33 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(252, 114, 255, 0.3);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
 
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
+}
 
-  /* Font */
-  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+/* Light Theme */
+[data-theme="light"] {
+  --background: #ffffff;
+  --background-secondary: #f5f5f5;
+  --background-tertiary: #eeeeee;
+  --background-hover: #e5e5e5;
+
+  --card: #ffffff;
+  --card-hover: #f5f5f5;
+  --card-border: #e0e0e0;
+
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+
+  --border: #e0e0e0;
+  --border-hover: #cccccc;
 }
 
 /* ==================== BASE RESET ==================== */
@@ -71,14 +78,213 @@
   min-height: 100vh;
   color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .shadcn-app * {
   box-sizing: border-box;
 }
 
-/* ==================== SWAP CARD ==================== */
-.swap-card {
+/* ==================== RAINBOW BUTTON ==================== */
+.rainbow-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(90deg, #000000, #1a1a1a);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.rainbow-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #9400d3,
+    #ff0000
+  );
+  background-size: 400% 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: rainbow-shift 3s linear infinite;
+  z-index: 0;
+}
+
+.rainbow-button:hover::before {
+  opacity: 1;
+}
+
+.rainbow-button:hover {
+  transform: scale(1.02);
+}
+
+.rainbow-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rainbow-button:disabled::before {
+  display: none;
+}
+
+.rainbow-button span,
+.rainbow-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 400% 50%; }
+}
+
+/* Rainbow button with border effect */
+.rainbow-button-outline {
+  position: relative;
+  background: var(--card);
+  color: var(--text-primary);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.rainbow-button-outline::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #9400d3,
+    #ff0000
+  );
+  background-size: 400% 100%;
+  border-radius: calc(var(--radius-lg) + 2px);
+  z-index: -1;
+  animation: rainbow-shift 3s linear infinite;
+}
+
+/* ==================== BORDER BEAM ==================== */
+.border-beam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.border-beam::before {
+  content: '';
+  position: absolute;
+  width: var(--size, 100px);
+  height: var(--size, 100px);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-from, #ffaa40),
+    var(--color-to, #9c40ff),
+    transparent
+  );
+  border-radius: 50%;
+  animation: border-beam-spin var(--duration, 8s) linear infinite;
+  filter: blur(4px);
+}
+
+@keyframes border-beam-spin {
+  0% {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    top: 0;
+    left: 100%;
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    top: 100%;
+    left: 100%;
+    transform: translate(-50%, -50%);
+  }
+  75% {
+    top: 100%;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ==================== THEME TOGGLER ==================== */
+.theme-toggler {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-toggler-track {
+  width: 56px;
+  height: 28px;
+  background: var(--background-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.theme-toggler-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background 0.3s ease;
+  color: var(--background);
+}
+
+.theme-toggler-thumb.dark {
+  transform: translateX(28px);
+}
+
+.theme-toggler-thumb svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ==================== CARDS WITH BEAM ==================== */
+.swap-card,
+.pool-card {
+  position: relative;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
@@ -87,6 +293,7 @@
   width: 100%;
   margin: 0 auto;
   box-shadow: var(--shadow-lg);
+  overflow: hidden;
 }
 
 .swap-card-header {
@@ -188,32 +395,25 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  background: #2d2d3d;
-  border: 1px solid #3d3d4d;
+  background: var(--background-tertiary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: var(--spacing-xs) var(--spacing-md) var(--spacing-xs) var(--spacing-xs);
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease;
   flex-shrink: 0;
-  color: #ffffff !important;
+  color: var(--text-primary);
 }
 
 .token-selector:hover {
-  background: #3d3d4d;
-  border-color: #4d4d5d;
-}
-
-.token-selector span,
-.token-selector .token-symbol {
-  color: #ffffff !important;
-  opacity: 1 !important;
+  background: var(--background-hover);
+  border-color: var(--border-hover);
 }
 
 .token-icon {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,13 +422,24 @@
   color: white;
 }
 
+.token-icon.usdc {
+  background: #2775ca;
+}
+
+.token-icon.usdt {
+  background: #26a17b;
+}
+
+.token-icon.usdy {
+  background: #000000;
+  border: 1px solid #333;
+}
+
 .token-symbol {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #ffffff !important;
+  color: var(--text-primary);
   margin-left: 4px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  opacity: 1 !important;
 }
 
 .token-chevron {
@@ -260,9 +471,9 @@
 }
 
 .max-btn {
-  background: var(--primary-muted);
-  color: var(--primary);
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
   font-size: 0.75rem;
@@ -272,7 +483,7 @@
 }
 
 .max-btn:hover {
-  background: rgba(252, 114, 255, 0.2);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ==================== SWAP ARROW BUTTON ==================== */
@@ -306,55 +517,6 @@
 .swap-direction-btn svg {
   width: 20px;
   height: 20px;
-}
-
-/* ==================== SWAP BUTTON ==================== */
-.swap-btn {
-  width: 100%;
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition-normal);
-  margin-top: var(--spacing-lg);
-}
-
-.swap-btn-primary {
-  background: var(--primary);
-  color: var(--background);
-}
-
-.swap-btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-glow);
-}
-
-.swap-btn-secondary {
-  background: var(--primary-muted);
-  color: var(--primary);
-}
-
-.swap-btn-secondary:hover:not(:disabled) {
-  background: rgba(252, 114, 255, 0.2);
-}
-
-.swap-btn-error {
-  background: var(--error-bg);
-  color: var(--error);
-}
-
-.swap-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.swap-btn-loading {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
 }
 
 /* ==================== SWAP DETAILS ==================== */
@@ -399,14 +561,8 @@
 
 /* ==================== POOL CARD ==================== */
 .pool-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
   max-width: 520px;
-  width: 100%;
-  margin: 0 auto;
-  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-xl);
 }
 
 .pool-tabs {
@@ -504,9 +660,9 @@
 }
 
 .slippage-option.active {
-  background: var(--primary-muted);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--text-primary);
+  color: var(--background);
+  border-color: var(--text-primary);
 }
 
 .slippage-custom {
@@ -634,7 +790,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -748,4 +904,75 @@
   text-align: right;
   font-size: 0.875rem;
   color: var(--text-secondary);
+}
+
+/* ==================== HEADER STYLES ==================== */
+.header {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.3s ease;
+}
+
+.header-logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Network Button with Rainbow effect */
+.network-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--background-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.network-btn:hover {
+  background: var(--background-hover);
+  border-color: var(--border-hover);
+}
+
+.network-btn.warning {
+  background: var(--warning-bg);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* Wallet Button */
+.wallet-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--text-primary);
+  color: var(--background);
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.wallet-btn:hover {
+  opacity: 0.9;
+}
+
+/* Connected wallet button */
+.wallet-btn.connected {
+  background: var(--background-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.wallet-btn.connected:hover {
+  background: var(--background-hover);
 }

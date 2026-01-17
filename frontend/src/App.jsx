@@ -135,6 +135,7 @@ function App() {
 
       console.log('Starting wallet connection...')
 
+      // Request accounts first
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       })
@@ -146,17 +147,25 @@ function App() {
       const userAccount = accounts[0]
       console.log('Account connected:', userAccount)
 
-      // First ensure we're on the correct network
+      // Try to switch/add network
       await ensureArcTestnet()
 
+      // Small delay to let MetaMask settle after network switch
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Verify we're on the correct network
       const finalChainId = await window.ethereum.request({ method: 'eth_chainId' })
+      console.log('Final chain ID:', finalChainId)
+
       if (finalChainId !== NETWORK.chainIdHex) {
-        throw new Error('Could not switch to Arc Testnet. Please switch manually.')
+        throw new Error('Please switch to Arc Testnet manually and try again.')
       }
 
-      // Create provider and signer AFTER network switch to ensure correct network
+      // Create provider and signer on correct network
       const newProvider = new ethers.BrowserProvider(window.ethereum)
       const newSigner = await newProvider.getSigner()
+
+      console.log('Provider and signer created')
 
       setProvider(newProvider)
       setSigner(newSigner)
@@ -165,67 +174,65 @@ function App() {
 
       await initializeContracts(newSigner)
 
-      console.log('Wallet connected successfully')
+      console.log('Wallet connected successfully!')
     } catch (err) {
       console.error('Wallet connection error:', err)
-      setError(err.message)
+      setError(err.message || 'Failed to connect wallet')
     } finally {
       setIsLoading(false)
     }
   }
 
   const ensureArcTestnet = async () => {
-    try {
-      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
-      console.log('Current chain ID:', chainId)
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+    console.log('Current chain ID:', chainId, 'Target:', NETWORK.chainIdHex)
 
-      if (chainId === NETWORK.chainIdHex) {
-        console.log('Already on Arc Testnet')
-        return
+    if (chainId === NETWORK.chainIdHex) {
+      console.log('Already on Arc Testnet')
+      return true
+    }
+
+    console.log('Switching to Arc Testnet...')
+
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: NETWORK.chainIdHex }]
+      })
+      console.log('Successfully switched to Arc Testnet')
+      return true
+    } catch (switchError) {
+      console.log('Switch error code:', switchError.code)
+
+      // User rejected the switch
+      if (switchError.code === 4001) {
+        throw new Error('Please switch to Arc Testnet to use this app.')
       }
 
-      console.log('Switching to Arc Testnet...')
-
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: NETWORK.chainIdHex }]
-        })
-        console.log('Successfully switched to Arc Testnet')
-        return
-      } catch (switchError) {
-        console.log('Switch failed, trying to add network:', switchError)
-
-        if (switchError.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: NETWORK.chainIdHex,
-                chainName: NETWORK.name,
-                rpcUrls: [NETWORK.rpcUrl],
-                nativeCurrency: NETWORK.nativeCurrency,
-                blockExplorerUrls: [NETWORK.explorerUrl]
-              }]
-            })
-            console.log('Arc Testnet added successfully')
-
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: NETWORK.chainIdHex }]
-            })
-            console.log('Successfully switched to Arc Testnet after adding')
-          } catch (addError) {
-            console.error('Could not add Arc Testnet:', addError)
-            throw new Error('Could not add Arc Testnet. Please add it manually.')
+      // Network not found, try to add it
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: NETWORK.chainIdHex,
+              chainName: NETWORK.name,
+              rpcUrls: [NETWORK.rpcUrl],
+              nativeCurrency: NETWORK.nativeCurrency,
+              blockExplorerUrls: [NETWORK.explorerUrl]
+            }]
+          })
+          console.log('Arc Testnet added successfully')
+          return true
+        } catch (addError) {
+          if (addError.code === 4001) {
+            throw new Error('Please add Arc Testnet to use this app.')
           }
-        } else {
-          throw new Error('Could not switch to Arc Testnet. Please switch manually.')
+          throw new Error('Could not add Arc Testnet: ' + addError.message)
         }
       }
-    } catch (err) {
-      console.error('ensureArcTestnet error:', err)
-      throw err
+
+      throw new Error('Could not switch network: ' + switchError.message)
     }
   }
 

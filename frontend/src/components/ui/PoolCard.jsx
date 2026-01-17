@@ -240,24 +240,32 @@ function PoolCard({ contracts, account }) {
 
   const tokenContracts = [contracts.token0, contracts.token1, contracts.token2]
 
+  // Check if contracts are ready
+  const contractsReady = contracts.token0 && contracts.token1 && contracts.token2
+
   // Load data
   useEffect(() => {
-    if (contracts.token0 && account) {
+    if (contractsReady && account) {
       loadData()
     }
-  }, [contracts, account, selectedPool])
+  }, [contracts, account, selectedPool, contractsReady])
 
   const loadData = async () => {
+    if (!contractsReady || !account) return
+
     try {
+      console.log('PoolCard: Loading data for account:', account)
       // Load token balances
       const bal0 = await contracts.token0.balanceOf(account)
       const bal1 = await contracts.token1.balanceOf(account)
       const bal2 = await contracts.token2.balanceOf(account)
-      setBalances([
+      const formatted = [
         ethers.formatUnits(bal0, 6),
         ethers.formatUnits(bal1, 6),
         ethers.formatUnits(bal2, 6)
-      ])
+      ]
+      console.log('PoolCard: Balances loaded:', formatted)
+      setBalances(formatted)
 
       // Load reserves
       const swapContract = selectedPool.use3Pool ? contracts.swap3Pool : contracts.swap

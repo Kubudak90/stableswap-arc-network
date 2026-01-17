@@ -79,7 +79,8 @@ const TokenInput = ({
   onTokenClick,
   balance,
   readOnly,
-  onMaxClick
+  onMaxClick,
+  loading
 }) => {
   const token = TOKENS[tokenIndex]
 
@@ -113,9 +114,15 @@ const TokenInput = ({
             : ''}
         </span>
         <div className="token-balance">
-          <span>Balance: {parseFloat(balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-          {!readOnly && parseFloat(balance) > 0 && (
-            <button className="max-btn" onClick={onMaxClick}>MAX</button>
+          {loading ? (
+            <span style={{ color: 'var(--text-tertiary)' }}>Loading...</span>
+          ) : (
+            <>
+              <span>Balance: {parseFloat(balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+              {!readOnly && parseFloat(balance) > 0 && (
+                <button className="max-btn" onClick={onMaxClick}>MAX</button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -222,6 +229,7 @@ function SwapCard({ contracts, account }) {
   const [tokenOutIndex, setTokenOutIndex] = useState(1)
   const [slippage, setSlippage] = useState(0.5)
   const [loading, setLoading] = useState(false)
+  const [loadingBalances, setLoadingBalances] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [txHash, setTxHash] = useState('')
@@ -234,25 +242,38 @@ function SwapCard({ contracts, account }) {
   // Determine pool type
   const use3Pool = tokenInIndex === 2 || tokenOutIndex === 2
 
+  // Check if contracts are ready
+  const contractsReady = contracts.token0 && contracts.token1 && contracts.token2
+
   // Load balances
   useEffect(() => {
-    if (contracts.token0 && contracts.token1 && contracts.token2 && account) {
+    if (contractsReady && account) {
       loadBalances()
     }
-  }, [contracts, account])
+  }, [contracts, account, contractsReady])
 
   const loadBalances = async () => {
+    if (!contractsReady || !account) return
+
+    setLoadingBalances(true)
     try {
+      console.log('Loading balances for account:', account)
       const bal0 = await contracts.token0.balanceOf(account)
       const bal1 = await contracts.token1.balanceOf(account)
       const bal2 = await contracts.token2.balanceOf(account)
-      setBalances([
+
+      const formatted = [
         ethers.formatUnits(bal0, 6),
         ethers.formatUnits(bal1, 6),
         ethers.formatUnits(bal2, 6)
-      ])
+      ]
+      console.log('Balances loaded:', formatted)
+      setBalances(formatted)
     } catch (err) {
       console.error('Error loading balances:', err)
+      setError('Failed to load balances. Check network connection.')
+    } finally {
+      setLoadingBalances(false)
     }
   }
 
@@ -344,6 +365,8 @@ function SwapCard({ contracts, account }) {
   // Button state
   const getButtonState = () => {
     if (!account) return { text: 'Connect Wallet', disabled: true, variant: 'secondary' }
+    if (!contractsReady) return { text: 'Loading...', disabled: true, variant: 'secondary' }
+    if (loadingBalances) return { text: 'Loading balances...', disabled: true, variant: 'secondary' }
     if (!amountIn || parseFloat(amountIn) === 0) return { text: 'Enter an amount', disabled: true, variant: 'secondary' }
     if (parseFloat(amountIn) > parseFloat(balances[tokenInIndex])) {
       return { text: `Insufficient ${TOKENS[tokenInIndex].symbol}`, disabled: true, variant: 'error' }
@@ -415,6 +438,7 @@ function SwapCard({ contracts, account }) {
         onTokenClick={() => setShowTokenSelect('in')}
         balance={balances[tokenInIndex]}
         onMaxClick={handleMax}
+        loading={loadingBalances}
       />
 
       {/* Swap Direction Button */}
@@ -433,6 +457,7 @@ function SwapCard({ contracts, account }) {
         onTokenClick={() => setShowTokenSelect('out')}
         balance={balances[tokenOutIndex]}
         readOnly
+        loading={loadingBalances}
       />
 
       {/* Swap Details */}

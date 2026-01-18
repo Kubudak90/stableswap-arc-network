@@ -65,8 +65,8 @@
   --card-border: #e0e0e0;
 
   --text-primary: #000000;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
+  --text-secondary: #333333;
+  --text-tertiary: #666666;
 
   --border: #e0e0e0;
   --border-hover: #cccccc;
@@ -459,6 +459,39 @@
 
 [data-theme="light"] .token-symbol {
   color: #000000 !important;
+}
+
+[data-theme="light"] .token-input {
+  color: #000000 !important;
+}
+
+[data-theme="light"] .token-input::placeholder {
+  color: #888888;
+}
+
+[data-theme="light"] .token-input-label {
+  color: #333333;
+}
+
+[data-theme="light"] .token-balance,
+[data-theme="light"] .token-balance span {
+  color: #333333;
+}
+
+[data-theme="light"] .token-usd-value {
+  color: #444444;
+}
+
+[data-theme="light"] .swap-card-title {
+  color: #000000;
+}
+
+[data-theme="light"] .swap-detail-label {
+  color: #333333;
+}
+
+[data-theme="light"] .swap-detail-value {
+  color: #000000;
 }
 
 .token-chevron {

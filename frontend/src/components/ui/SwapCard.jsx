@@ -102,14 +102,9 @@ const TokenInput = ({
           }}
           readOnly={readOnly}
         />
-        <button className="token-selector" onClick={onTokenClick} style={{ color: '#ffffff' }}>
+        <button className="token-selector" onClick={onTokenClick}>
           <TokenIcon symbol={token.symbol} size={28} />
-          <span style={{
-            fontSize: '1rem',
-            fontWeight: 700,
-            color: '#ffffff',
-            marginLeft: '4px'
-          }}>
+          <span className="token-selector-text">
             {token.symbol}
           </span>
           <ChevronDownIcon />

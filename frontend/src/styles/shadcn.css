@@ -425,6 +425,21 @@
   border-color: #bbbbbb;
 }
 
+.token-selector-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+[data-theme="light"] .token-selector-text {
+  color: #000000;
+}
+
+[data-theme="light"] .token-selector svg {
+  stroke: #000000;
+}
+
 .token-icon {
   width: 28px;
   height: 28px;

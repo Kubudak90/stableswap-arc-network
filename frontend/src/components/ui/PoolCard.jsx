@@ -540,14 +540,14 @@ function PoolCard({ contracts, account }) {
       <RainbowButton
         onClick={activeTab === 'add' ? handleAddLiquidity : handleRemoveLiquidity}
         disabled={buttonState.disabled}
-        style={{ width: '100%', padding: '16px 24px', fontSize: '1.1rem', fontWeight: 600 }}
+        style={{ marginTop: '16px' }}
       >
         {loading ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="swap-btn-loading">
             <span className="spinner"></span>
-            {buttonState.text}
+            <span>{buttonState.text}</span>
           </span>
-        ) : buttonState.text}
+        ) : <span>{buttonState.text}</span>}
       </RainbowButton>
     </div>
   )

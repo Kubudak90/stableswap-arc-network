@@ -171,14 +171,14 @@ const TokenSelectModal = ({ isOpen, onClose, onSelect, balances, currentTokenInd
             >
               <TokenIcon symbol={token.symbol} size={40} />
               <div className="token-list-info">
-                <div className="token-list-name" style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>
+                <div className="token-list-name" style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>
                   {token.symbol}
                 </div>
-                <div className="token-list-symbol" style={{ fontSize: '0.875rem', color: '#9b9b9b' }}>
+                <div className="token-list-symbol" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                   {token.name}
                 </div>
               </div>
-              <div className="token-list-balance" style={{ fontSize: '1rem', color: 'white' }}>
+              <div className="token-list-balance" style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
                 {parseFloat(balances[idx] || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
               </div>
               {idx === currentTokenIndex && (

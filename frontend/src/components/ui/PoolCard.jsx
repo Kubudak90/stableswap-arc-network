@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import { CONTRACTS, getExplorerUrl } from '../../config'
+import { CONTRACTS, ABIS, getExplorerUrl } from '../../config'
 import { RainbowButton } from './RainbowButton'
 
 // SVG Icons
+const GiftIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="8" width="18" height="13" rx="2"/>
+    <path d="M12 8v13M3 12h18M8 8c0-2.5 1.5-4 4-4s4 1.5 4 4"/>
+  </svg>
+)
+
 const PlusIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <line x1="12" y1="5" x2="12" y2="19"/>
@@ -232,12 +239,14 @@ function PoolCard({ contracts, account }) {
   const [amounts, setAmounts] = useState({})
   const [lpAmount, setLpAmount] = useState('')
   const [loading, setLoading] = useState(false)
+  const [claimLoading, setClaimLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [txHash, setTxHash] = useState('')
   const [balances, setBalances] = useState(['0', '0', '0'])
   const [reserves, setReserves] = useState({})
   const [lpBalance, setLpBalance] = useState('0')
+  const [pendingRewards, setPendingRewards] = useState('0')
 
   const tokenContracts = [contracts.token0, contracts.token1, contracts.token2]
 
@@ -294,8 +303,60 @@ function PoolCard({ contracts, account }) {
           console.log('LP balance not available')
         }
       }
+
+      // Load pending rewards from LiquidityRewards contract
+      try {
+        const provider = contracts.token0.runner?.provider
+        if (provider) {
+          const liquidityRewardsContract = new ethers.Contract(
+            CONTRACTS.liquidityRewards,
+            ABIS.liquidityRewards,
+            provider
+          )
+          const poolId = selectedPool.use3Pool ? 1 : 0 // 0 for 2pool, 1 for 3pool
+          const pending = await liquidityRewardsContract.pendingRewards(poolId, account)
+          setPendingRewards(ethers.formatUnits(pending, 18)) // ASS token has 18 decimals
+        }
+      } catch (e) {
+        console.log('Pending rewards not available:', e.message)
+        setPendingRewards('0')
+      }
     } catch (err) {
       console.error('Error loading data:', err)
+    }
+  }
+
+  // Claim rewards
+  const handleClaimRewards = async () => {
+    if (!account || parseFloat(pendingRewards) <= 0) {
+      setError('No rewards to claim')
+      return
+    }
+
+    setClaimLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const signer = await contracts.token0.runner?.provider.getSigner()
+      const liquidityRewardsContract = new ethers.Contract(
+        CONTRACTS.liquidityRewards,
+        ABIS.liquidityRewards,
+        signer
+      )
+      const poolId = selectedPool.use3Pool ? 1 : 0
+
+      const tx = await liquidityRewardsContract.claimRewards(poolId)
+      const receipt = await tx.wait()
+
+      setTxHash(receipt.hash)
+      setSuccess(`Claimed ${parseFloat(pendingRewards).toFixed(4)} ASS rewards!`)
+      await loadData()
+    } catch (err) {
+      console.error('Claim rewards error:', err)
+      setError(err.reason || err.message || 'Failed to claim rewards')
+    } finally {
+      setClaimLoading(false)
     }
   }
 
@@ -459,7 +520,42 @@ function PoolCard({ contracts, account }) {
             {parseFloat(lpBalance).toLocaleString(undefined, { maximumFractionDigits: 4 })}
           </div>
         </div>
+        <div className="pool-stat-card">
+          <div className="pool-stat-label">Rewards</div>
+          <div className="pool-stat-value" style={{ color: parseFloat(pendingRewards) > 0 ? '#fc72ff' : 'inherit' }}>
+            {parseFloat(pendingRewards).toLocaleString(undefined, { maximumFractionDigits: 4 })} ASS
+          </div>
+        </div>
       </div>
+
+      {/* Claim Rewards Section */}
+      {parseFloat(pendingRewards) > 0 && (
+        <button
+          onClick={handleClaimRewards}
+          disabled={claimLoading}
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: 'linear-gradient(135deg, #fc72ff 0%, #c13cff 100%)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'white',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: claimLoading ? 'wait' : 'pointer',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 4px 16px rgba(252, 114, 255, 0.3)'
+          }}
+        >
+          <GiftIcon />
+          {claimLoading ? 'Claiming...' : `Claim ${parseFloat(pendingRewards).toFixed(4)} ASS`}
+        </button>
+      )}
 
       {/* Alerts */}
       {error && (

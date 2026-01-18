@@ -285,8 +285,8 @@
 .swap-card,
 .pool-card {
   position: relative;
-  background: #0a0a0a;
-  border: 1px solid #333333;
+  background: #0f0f0f;
+  border: 1px solid #555555;
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
   max-width: 480px;

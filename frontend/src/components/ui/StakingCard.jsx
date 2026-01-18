@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { CONTRACTS, getExplorerUrl } from '../../config'
+import { RainbowButton } from './RainbowButton'
 
 // Icons
 const StakeIcon = () => (
@@ -95,7 +96,7 @@ const StatCard = ({ label, value, subValue, icon }) => (
       </span>
       {icon}
     </div>
-    <div style={{ fontSize: '1.5rem', fontWeight: '600', color: 'white' }}>
+    <div style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)' }}>
       {value}
     </div>
     {subValue && (
@@ -279,7 +280,7 @@ function StakingCard({ provider, signer, account, contracts }) {
       <div className="swap-card" style={{ maxWidth: '520px' }}>
         {/* Header */}
         <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'white', marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
             Stake ASS
           </h2>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -417,7 +418,7 @@ function StakingCard({ provider, signer, account, contracts }) {
                 borderRadius: '20px'
               }}>
                 <TokenIcon symbol="A" size={28} color="#fc72ff" />
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>ASS</span>
+                <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>ASS</span>
               </div>
             </div>
             <div className="token-balance-row">
@@ -459,7 +460,7 @@ function StakingCard({ provider, signer, account, contracts }) {
                 borderRadius: '20px'
               }}>
                 <TokenIcon symbol="A" size={28} color="#4c82fb" />
-                <span style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>ASS</span>
+                <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>ASS</span>
               </div>
             </div>
             <div className="token-balance-row">
@@ -475,8 +476,7 @@ function StakingCard({ provider, signer, account, contracts }) {
         )}
 
         {/* Action Button */}
-        <button
-          className="swap-btn swap-btn-primary"
+        <RainbowButton
           onClick={activeTab === 'stake' ? handleStake : handleUnstake}
           disabled={buttonState.disabled}
           style={{ marginTop: '16px' }}
@@ -484,10 +484,10 @@ function StakingCard({ provider, signer, account, contracts }) {
           {loading ? (
             <span className="swap-btn-loading">
               <span className="spinner"></span>
-              Processing...
+              <span>Processing...</span>
             </span>
-          ) : buttonState.text}
-        </button>
+          ) : <span>{buttonState.text}</span>}
+        </RainbowButton>
       </div>
     </div>
   )

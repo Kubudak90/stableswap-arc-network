@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { CONTRACTS, getExplorerUrl } from '../../config'
+import { RainbowButton } from './RainbowButton'
 
 // Icons
 const DropletIcon = () => (
@@ -109,7 +110,7 @@ const TokenCard = ({ symbol, name, amount }) => (
   }}>
     <TokenIcon symbol={symbol} size={40} />
     <div style={{ flex: 1 }}>
-      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'white' }}>{symbol}</div>
+      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>{symbol}</div>
       <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{name}</div>
     </div>
     <div style={{
@@ -288,7 +289,7 @@ function FaucetCard({ contracts, account }) {
           }}>
             <DropletIcon />
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'white', marginBottom: '8px' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
             Testnet Faucet
           </h2>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -353,24 +354,23 @@ function FaucetCard({ contracts, account }) {
         )}
 
         {/* Claim Button */}
-        <button
-          className="swap-btn swap-btn-primary"
+        <RainbowButton
           onClick={handleClaim}
           disabled={loading || !canClaim || !account}
         >
           {loading ? (
             <span className="swap-btn-loading">
               <span className="spinner"></span>
-              Claiming...
+              <span>Claiming...</span>
             </span>
           ) : !account ? (
-            'Connect Wallet'
+            <span>Connect Wallet</span>
           ) : canClaim ? (
-            'Claim Tokens'
+            <span>Claim Tokens</span>
           ) : (
-            'Already Claimed'
+            <span>Already Claimed</span>
           )}
-        </button>
+        </RainbowButton>
 
         {/* Info */}
         <div style={{

@@ -401,8 +401,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  background: #1a1a1a;
-  border: 1px solid #333333;
+  background: #1a1a1a !important;
+  border: 1px solid #444444 !important;
   border-radius: var(--radius-full);
   padding: var(--spacing-xs) var(--spacing-md) var(--spacing-xs) var(--spacing-xs);
   cursor: pointer;
@@ -411,33 +411,38 @@
 }
 
 .token-selector:hover {
-  background: #222222;
-  border-color: #444444;
-}
-
-[data-theme="light"] .token-selector {
-  background: #f0f0f0;
-  border: 1px solid #cccccc;
-}
-
-[data-theme="light"] .token-selector:hover {
-  background: #e0e0e0;
-  border-color: #bbbbbb;
+  background: #2a2a2a !important;
+  border-color: #555555 !important;
 }
 
 .token-selector-text {
   font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #ffffff !important;
   margin-left: 4px;
 }
 
+.token-selector svg {
+  stroke: #ffffff !important;
+}
+
+/* Light theme token selector */
+[data-theme="light"] .token-selector {
+  background: #f0f0f0 !important;
+  border: 1px solid #cccccc !important;
+}
+
+[data-theme="light"] .token-selector:hover {
+  background: #e0e0e0 !important;
+  border-color: #bbbbbb !important;
+}
+
 [data-theme="light"] .token-selector-text {
-  color: #000000;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .token-selector svg {
-  stroke: #000000;
+  stroke: #000000 !important;
 }
 
 .token-icon {

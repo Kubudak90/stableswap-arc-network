@@ -638,7 +638,8 @@
 }
 
 .pool-tabs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   background: var(--background-secondary);
   border-radius: var(--radius-md);
   padding: var(--spacing-xs);

@@ -529,31 +529,36 @@ function PoolCard({ contracts, account }) {
       </div>
 
       {/* Claim Rewards Section */}
-      {parseFloat(pendingRewards) > 0 && (
+      {account && (
         <button
           onClick={handleClaimRewards}
-          disabled={claimLoading}
+          disabled={claimLoading || parseFloat(pendingRewards) <= 0}
           style={{
             width: '100%',
             padding: '14px',
-            background: 'linear-gradient(135deg, #fc72ff 0%, #c13cff 100%)',
-            border: 'none',
+            background: parseFloat(pendingRewards) > 0
+              ? 'linear-gradient(135deg, #fc72ff 0%, #c13cff 100%)'
+              : 'var(--background-tertiary)',
+            border: parseFloat(pendingRewards) > 0 ? 'none' : '1px solid var(--border)',
             borderRadius: '12px',
-            color: 'white',
+            color: parseFloat(pendingRewards) > 0 ? 'white' : 'var(--text-secondary)',
             fontSize: '1rem',
             fontWeight: '600',
-            cursor: claimLoading ? 'wait' : 'pointer',
+            cursor: (claimLoading || parseFloat(pendingRewards) <= 0) ? 'not-allowed' : 'pointer',
             marginBottom: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
             transition: 'all 0.2s ease',
-            boxShadow: '0 4px 16px rgba(252, 114, 255, 0.3)'
+            boxShadow: parseFloat(pendingRewards) > 0 ? '0 4px 16px rgba(252, 114, 255, 0.3)' : 'none',
+            opacity: parseFloat(pendingRewards) > 0 ? 1 : 0.6
           }}
         >
           <GiftIcon />
-          {claimLoading ? 'Claiming...' : `Claim ${parseFloat(pendingRewards).toFixed(4)} ASS`}
+          {claimLoading ? 'Claiming...' : parseFloat(pendingRewards) > 0
+            ? `Claim ${parseFloat(pendingRewards).toFixed(4)} ASS`
+            : 'No Rewards Yet'}
         </button>
       )}
 

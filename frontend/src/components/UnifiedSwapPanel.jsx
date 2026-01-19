@@ -175,14 +175,19 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
         console.log("✅ Token already approved")
       }
       
+      // Calculate minAmountOut with slippage
+      const expectedOutWei = amountInWei * 9996n / 10000n // 0.04% fee
+      const slippageBps = Math.round(parseFloat(slippage) * 100) // Convert percent to bps
+      const minAmountOutWei = expectedOutWei - (expectedOutWei * BigInt(slippageBps) / 10000n)
+
       // Execute swap
       let swapTx
       if (use3PoolCurrent) {
-        // 3Pool: swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn)
-        console.log("Calling 3Pool swap:", tokenInIndex, tokenOutIndex, amountInWei.toString())
-        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei)
+        // 3Pool V2: swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn, uint256 minAmountOut)
+        console.log("Calling 3Pool swap:", tokenInIndex, tokenOutIndex, amountInWei.toString(), minAmountOutWei.toString())
+        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei, minAmountOutWei)
       } else {
-        // 2Pool: swap(bool zeroForOne, uint256 amountIn)
+        // 2Pool V2: swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut)
         // zeroForOne = true means token0 -> token1 (tUSDC -> tUSDT)
         // zeroForOne = false means token1 -> token0 (tUSDT -> tUSDC)
         const zeroForOne = tokenInIndex === 0 && tokenOutIndex === 1
@@ -190,10 +195,11 @@ function UnifiedSwapPanel({ contracts, account, provider, signer }) {
           zeroForOne,
           amountIn: amountInWei.toString(),
           amountInFormatted: ethers.formatUnits(amountInWei, 6),
+          minAmountOut: ethers.formatUnits(minAmountOutWei, 6),
           tokenIn: tokenNames[tokenInIndex],
           tokenOut: tokenNames[tokenOutIndex]
         })
-        swapTx = await swapContract.swap(zeroForOne, amountInWei)
+        swapTx = await swapContract.swap(zeroForOne, amountInWei, minAmountOutWei)
       }
       
       console.log("⏳ Waiting for swap transaction...")

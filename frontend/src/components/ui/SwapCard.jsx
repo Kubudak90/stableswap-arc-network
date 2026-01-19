@@ -320,15 +320,20 @@ function SwapCard({ contracts, account }) {
       const approveTx = await tokenContract.approve(swapAddress, amountInWei)
       await approveTx.wait()
 
+      // Calculate minAmountOut with slippage
+      const expectedOut = ethers.parseUnits(amountOut, 6)
+      const slippageBps = Math.floor(slippage * 100) // Convert 0.5% to 50 bps
+      const minAmountOut = expectedOut - (expectedOut * BigInt(slippageBps) / 10000n)
+
       // Swap
       let swapTx
       if (use3Pool) {
-        // 3Pool swap: (uint8 tokenIn, uint8 tokenOut, uint256 amountIn)
-        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei)
+        // 3Pool V2 swap: (uint8 tokenIn, uint8 tokenOut, uint256 amountIn, uint256 minAmountOut)
+        swapTx = await swapContract.swap(tokenInIndex, tokenOutIndex, amountInWei, minAmountOut)
       } else {
-        // 2Pool swap: (bool zeroForOne, uint256 amountIn)
+        // 2Pool V2 swap: (bool zeroForOne, uint256 amountIn, uint256 minAmountOut)
         const zeroForOne = tokenInIndex === 0
-        swapTx = await swapContract.swap(zeroForOne, amountInWei)
+        swapTx = await swapContract.swap(zeroForOne, amountInWei, minAmountOut)
       }
 
       const receipt = await swapTx.wait()

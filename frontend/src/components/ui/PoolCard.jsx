@@ -307,9 +307,11 @@ function PoolCard({ contracts, account }) {
         // Try to get LP balance (unstaked, in wallet)
         try {
           const lpBal = await swapContract.balanceOf(account)
+          console.log('LP balance raw:', lpBal.toString())
           setLpBalance(ethers.formatUnits(lpBal, 18))
         } catch (e) {
-          console.log('LP balance not available')
+          console.log('LP balance not available:', e.message)
+          setLpBalance('0')
         }
       }
 
@@ -517,7 +519,7 @@ function PoolCard({ contracts, account }) {
         const amt0 = amounts[0] ? ethers.parseUnits(amounts[0], 6) : 0n
         const amt1 = amounts[1] ? ethers.parseUnits(amounts[1], 6) : 0n
         const amt2 = amounts[2] ? ethers.parseUnits(amounts[2], 6) : 0n
-        tx = await swapContract.addLiquidity(amt0, amt1, amt2, 0)
+        tx = await swapContract.addLiquidity(amt0, amt1, amt2)
       } else {
         const amt0 = amounts[0] ? ethers.parseUnits(amounts[0], 6) : 0n
         const amt1 = amounts[1] ? ethers.parseUnits(amounts[1], 6) : 0n

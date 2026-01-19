@@ -305,7 +305,7 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
           transform: 'translateX(-50%)'
         }}>
           <NavLink to="/">Swap</NavLink>
-          <NavLink to="/pool">Pool</NavLink>
+          <NavLink to="/pools">Pools</NavLink>
           <NavLink to="/staking">Stake</NavLink>
           <NavLink to="/faucet">Faucet</NavLink>
           <a

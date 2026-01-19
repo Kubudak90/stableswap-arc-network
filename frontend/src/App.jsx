@@ -7,6 +7,7 @@ import { CONTRACTS, NETWORK, ABIS } from './config'
 import Header from './components/ui/Header'
 import SwapCard from './components/ui/SwapCard'
 import PoolCard from './components/ui/PoolCard'
+import PoolsPage from './components/ui/PoolsPage'
 import StakingCard from './components/ui/StakingCard'
 import FaucetCard from './components/ui/FaucetCard'
 
@@ -274,6 +275,9 @@ function App() {
             <PageContainer>
               <SwapCard contracts={contracts} account={account} />
             </PageContainer>
+          } />
+          <Route path="/pools" element={
+            <PoolsPage contracts={contracts} account={account} />
           } />
           <Route path="/pool" element={
             <PageContainer>

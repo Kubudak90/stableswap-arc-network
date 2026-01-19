@@ -56,6 +56,10 @@ export const ABIS = {
     "function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256)",
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
+    "function balanceOf(address owner) view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+    "function approve(address spender, uint256 amount) returns (bool)",
+    "function transfer(address to, uint256 amount) returns (bool)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"
@@ -71,6 +75,10 @@ export const ABIS = {
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
     "function token2() external view returns (address)",
+    "function balanceOf(address owner) view returns (uint256)",
+    "function totalSupply() view returns (uint256)",
+    "function approve(address spender, uint256 amount) returns (bool)",
+    "function transfer(address to, uint256 amount) returns (bool)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"

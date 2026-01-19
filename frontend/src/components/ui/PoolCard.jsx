@@ -50,9 +50,10 @@ const TOKENS = [
 ]
 
 // Pool configurations
+// poolId corresponds to LiquidityRewards contract pool index (2 and 3 for new LP pools)
 const POOLS = [
-  { id: '2pool', name: 'USDC-USDT', tokens: [0, 1], use3Pool: false, poolId: 0 },
-  { id: '3pool', name: '3Pool', tokens: [0, 1, 2], use3Pool: true, poolId: 1 },
+  { id: '2pool', name: 'USDC-USDT', tokens: [0, 1], use3Pool: false, poolId: 2 },
+  { id: '3pool', name: '3Pool', tokens: [0, 1, 2], use3Pool: true, poolId: 3 },
 ]
 
 // Token Icon Component

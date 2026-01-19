@@ -24,9 +24,13 @@ export const CONTRACTS = {
   testUSDT: import.meta.env.VITE_TEST_USDT || '0x787804d1f98F4Da65C6de63AaA00906A8C6868F3',
   testUSDY: import.meta.env.VITE_TEST_USDY || '0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a',
 
-  // Swap Pools
-  swap: import.meta.env.VITE_SWAP_2POOL || '0x5d4D4C908D7dfb882d5a24af713158FC805e410B',
-  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0x16d14659A50fFB31571e4e7ac4417C1Ff22bFc70',
+  // Swap Pools (with LP token support)
+  swap: import.meta.env.VITE_SWAP_2POOL || '0x23c1436cC3839745F9B7Aff3285FB94e77d49874',
+  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0x5B21002F0EB1D9128af95355031029bF748D1D68',
+
+  // LP Tokens
+  lp2Pool: import.meta.env.VITE_LP_2POOL || '0x1820ACA410eBe240D8138A1b39a6b3f018BCf3Ae',
+  lp3Pool: import.meta.env.VITE_LP_3POOL || '0xCe3aAA43db2e5953e2E06D928e3277277A73a65b',
 
   // ASS Token Ecosystem
   assToken: import.meta.env.VITE_ASS_TOKEN || '0xe56151c58780ebB54e32257B3426a6Bc15e46C3C',
@@ -47,30 +51,32 @@ export const SETTINGS = {
 
 // Contract ABIs
 export const ABIS = {
-  // StableSwap ABI (2 tokens) - Simple version without LP tokens
+  // StableSwapPool ABI (2 tokens with LP)
   swap: [
-    "function addLiquidity(uint256 amount0, uint256 amount1) external",
-    "function removeLiquidity(uint256 amount0, uint256 amount1) external",
-    "function swap(bool zeroForOne, uint256 amountIn) external returns (uint256 amountOut)",
+    "function addLiquidity(uint256 amount0, uint256 amount1, uint256 minLpOut) external returns (uint256 lpOut)",
+    "function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1) external returns (uint256 amt0, uint256 amt1)",
+    "function swap(bool zeroForOne, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut)",
     "function getReserves() external view returns (uint256, uint256)",
     "function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256)",
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
+    "function lp() external view returns (address)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"
   ],
 
-  // StableSwap3Pool ABI (3 tokens) - Simple version without LP tokens
+  // StableSwap3PoolLP ABI (3 tokens with LP)
   swap3Pool: [
-    "function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
-    "function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
-    "function swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn) external returns (uint256 amountOut)",
+    "function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2, uint256 minLpOut) external returns (uint256 lpOut)",
+    "function removeLiquidity(uint256 lpAmount, uint256 min0, uint256 min1, uint256 min2) external returns (uint256 amt0, uint256 amt1, uint256 amt2)",
+    "function swap(uint8 tokenIn, uint8 tokenOut, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut)",
     "function getReserves() external view returns (uint256, uint256, uint256)",
     "function getAmountOut(uint256 amountIn, uint8 tokenIn, uint8 tokenOut) external view returns (uint256)",
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
     "function token2() external view returns (address)",
+    "function lp() external view returns (address)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"

@@ -20,6 +20,25 @@ const WarningIcon = () => (
   </svg>
 )
 
+// External Link Icon
+const ExternalLinkIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+    <polyline points="15 3 21 3 21 9"/>
+    <line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+)
+
+// Gas Icon (fuel pump)
+const GasIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M3 22V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/>
+    <path d="M3 22h12"/>
+    <path d="M15 10h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2v0a2 2 0 0 0 2-2V8l-4-4"/>
+    <rect x="6" y="8" width="6" height="4"/>
+  </svg>
+)
+
 // Logo Component
 const Logo = () => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -289,6 +308,39 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
           <NavLink to="/pool">Pool</NavLink>
           <NavLink to="/staking">Stake</NavLink>
           <NavLink to="/faucet">Faucet</NavLink>
+          <a
+            href="https://faucet.circle.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '8px 12px',
+              color: '#2775ca',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              borderRadius: '12px',
+              background: 'rgba(39, 117, 202, 0.1)',
+              border: '1px solid rgba(39, 117, 202, 0.2)',
+              transition: 'all 0.15s ease',
+              marginLeft: '8px'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(39, 117, 202, 0.2)'
+              e.target.style.borderColor = 'rgba(39, 117, 202, 0.4)'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(39, 117, 202, 0.1)'
+              e.target.style.borderColor = 'rgba(39, 117, 202, 0.2)'
+            }}
+            title="Get USDC for gas fees"
+          >
+            <GasIcon />
+            Gas
+            <ExternalLinkIcon />
+          </a>
         </nav>
 
         {/* Right - Theme + Network + Wallet */}

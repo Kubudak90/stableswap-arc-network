@@ -24,13 +24,13 @@ export const CONTRACTS = {
   testUSDT: import.meta.env.VITE_TEST_USDT || '0x787804d1f98F4Da65C6de63AaA00906A8C6868F3',
   testUSDY: import.meta.env.VITE_TEST_USDY || '0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a',
 
-  // Swap Pools (with LP token support)
-  swap: import.meta.env.VITE_SWAP_2POOL || '0x23c1436cC3839745F9B7Aff3285FB94e77d49874',
-  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0x5B21002F0EB1D9128af95355031029bF748D1D68',
+  // Swap Pools V2 (with LP token + Fee Distribution to FeeDistributor)
+  swap: import.meta.env.VITE_SWAP_2POOL || '0xB19eb9Cf58e5F55091798996F18351b71Cbc1a01',
+  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0x312858D2935a89512bB4C614e23c5E3d09ba4cB0',
 
-  // LP Tokens
-  lp2Pool: import.meta.env.VITE_LP_2POOL || '0x1820ACA410eBe240D8138A1b39a6b3f018BCf3Ae',
-  lp3Pool: import.meta.env.VITE_LP_3POOL || '0xCe3aAA43db2e5953e2E06D928e3277277A73a65b',
+  // LP Tokens V2
+  lp2Pool: import.meta.env.VITE_LP_2POOL || '0xA1162d71D509Fe5F1C65725Be44cAA705e9DDe23',
+  lp3Pool: import.meta.env.VITE_LP_3POOL || '0x9c27A4c32Eca2Dc5873E149D7c73cb0342d2F9F5',
 
   // ASS Token Ecosystem
   assToken: import.meta.env.VITE_ASS_TOKEN || '0xe56151c58780ebB54e32257B3426a6Bc15e46C3C',

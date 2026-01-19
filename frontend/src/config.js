@@ -47,7 +47,7 @@ export const SETTINGS = {
 
 // Contract ABIs
 export const ABIS = {
-  // StableSwap ABI (2 tokens)
+  // StableSwap ABI (2 tokens) - Simple version without LP tokens
   swap: [
     "function addLiquidity(uint256 amount0, uint256 amount1) external",
     "function removeLiquidity(uint256 amount0, uint256 amount1) external",
@@ -56,16 +56,12 @@ export const ABIS = {
     "function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256)",
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
-    "function balanceOf(address owner) view returns (uint256)",
-    "function totalSupply() view returns (uint256)",
-    "function approve(address spender, uint256 amount) returns (bool)",
-    "function transfer(address to, uint256 amount) returns (bool)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"
   ],
 
-  // StableSwap3Pool ABI (3 tokens)
+  // StableSwap3Pool ABI (3 tokens) - Simple version without LP tokens
   swap3Pool: [
     "function addLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
     "function removeLiquidity(uint256 amount0, uint256 amount1, uint256 amount2) external",
@@ -75,10 +71,6 @@ export const ABIS = {
     "function token0() external view returns (address)",
     "function token1() external view returns (address)",
     "function token2() external view returns (address)",
-    "function balanceOf(address owner) view returns (uint256)",
-    "function totalSupply() view returns (uint256)",
-    "function approve(address spender, uint256 amount) returns (bool)",
-    "function transfer(address to, uint256 amount) returns (bool)",
     "function pause() external",
     "function unpause() external",
     "function paused() external view returns (bool)"

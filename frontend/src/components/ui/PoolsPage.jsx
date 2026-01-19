@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ethers } from 'ethers'
-import { CONTRACTS, ABIS } from '../../config'
 
 // Icons
 const ArrowRightIcon = () => (
@@ -78,8 +77,6 @@ const StackedTokenIcons = ({ tokens, size = 32 }) => (
 
 // Pool Card Component
 const PoolListCard = ({ pool, onClick }) => {
-  const hasUserPosition = parseFloat(pool.userLpBalance) > 0
-
   return (
     <div
       onClick={onClick}
@@ -118,18 +115,16 @@ const PoolListCard = ({ pool, onClick }) => {
             </div>
           </div>
         </div>
-        {hasUserPosition && (
-          <div style={{
-            background: 'rgba(0, 211, 149, 0.1)',
-            color: '#00d395',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            fontSize: '0.75rem',
-            fontWeight: '600'
-          }}>
-            Your Position
-          </div>
-        )}
+        <div style={{
+          background: 'rgba(0, 211, 149, 0.1)',
+          color: '#00d395',
+          padding: '4px 8px',
+          borderRadius: '6px',
+          fontSize: '0.75rem',
+          fontWeight: '600'
+        }}>
+          {pool.fee}% Fee
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -188,7 +183,7 @@ const PoolListCard = ({ pool, onClick }) => {
           </div>
         </div>
 
-        {/* Your LP */}
+        {/* Token Count */}
         <div style={{
           background: 'var(--background-secondary)',
           borderRadius: '12px',
@@ -204,10 +199,10 @@ const PoolListCard = ({ pool, onClick }) => {
             textTransform: 'uppercase'
           }}>
             <CoinsIcon />
-            Your LP
+            Tokens
           </div>
           <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-            {parseFloat(pool.userLpBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            {pool.tokens.length}
           </div>
         </div>
       </div>
@@ -275,28 +270,9 @@ function PoolsPage({ contracts, account }) {
           const r1 = ethers.formatUnits(reserve1, 6)
           const tvl2Pool = parseFloat(r0) + parseFloat(r1)
 
-          let userLp2Pool = '0'
-          if (account) {
-            try {
-              const lpBal = await swap2Pool.balanceOf(account)
-              userLp2Pool = ethers.formatUnits(lpBal, 18)
-            } catch (e) {
-              console.log('Could not get 2pool LP balance')
-            }
-          }
-
-          // Calculate APR from LiquidityRewards if available
-          let apr2Pool = 0
-          if (contracts.liquidityRewards) {
-            try {
-              const poolInfo = await contracts.liquidityRewards.poolInfo(0)
-              // APR calculation based on rewards - simplified
-              // In production, you'd calculate based on reward rate and TVL
-              apr2Pool = poolInfo.allocPoint > 0 ? 12.5 : 0 // Base APR estimate
-            } catch (e) {
-              console.log('Could not get 2pool APR')
-            }
-          }
+          // Simple pools don't have LP tokens, just track reserves
+          // APR is from trading fees (0.04% per trade)
+          const apr2Pool = tvl2Pool > 0 ? 5.0 : 0 // Estimated APR from fees
 
           poolsData.push({
             id: '2pool',
@@ -305,7 +281,6 @@ function PoolsPage({ contracts, account }) {
             reserves: [r0, r1],
             tvl: tvl2Pool,
             apr: apr2Pool,
-            userLpBalance: userLp2Pool,
             fee: 0.04
           })
         } catch (e) {
@@ -321,26 +296,8 @@ function PoolsPage({ contracts, account }) {
           const r2 = ethers.formatUnits(reserve2, 6)
           const tvl3Pool = parseFloat(r0) + parseFloat(r1) + parseFloat(r2)
 
-          let userLp3Pool = '0'
-          if (account) {
-            try {
-              const lpBal = await swap3Pool.balanceOf(account)
-              userLp3Pool = ethers.formatUnits(lpBal, 18)
-            } catch (e) {
-              console.log('Could not get 3pool LP balance')
-            }
-          }
-
-          // Calculate APR
-          let apr3Pool = 0
-          if (contracts.liquidityRewards) {
-            try {
-              const poolInfo = await contracts.liquidityRewards.poolInfo(1)
-              apr3Pool = poolInfo.allocPoint > 0 ? 18.75 : 0 // Base APR estimate
-            } catch (e) {
-              console.log('Could not get 3pool APR')
-            }
-          }
+          // Simple pools don't have LP tokens, just track reserves
+          const apr3Pool = tvl3Pool > 0 ? 7.5 : 0 // Estimated APR from fees
 
           poolsData.push({
             id: '3pool',
@@ -349,7 +306,6 @@ function PoolsPage({ contracts, account }) {
             reserves: [r0, r1, r2],
             tvl: tvl3Pool,
             apr: apr3Pool,
-            userLpBalance: userLp3Pool,
             fee: 0.04
           })
         } catch (e) {
@@ -364,7 +320,6 @@ function PoolsPage({ contracts, account }) {
           reserves: ['0', '0'],
           tvl: 0,
           apr: 0,
-          userLpBalance: '0',
           fee: 0.04
         })
         poolsData.push({
@@ -374,7 +329,6 @@ function PoolsPage({ contracts, account }) {
           reserves: ['0', '0', '0'],
           tvl: 0,
           apr: 0,
-          userLpBalance: '0',
           fee: 0.04
         })
       }
@@ -491,9 +445,9 @@ function PoolsPage({ contracts, account }) {
         }}>
           <strong style={{ color: 'var(--text-primary)' }}>How it works:</strong>
           <ul style={{ margin: '8px 0 0 16px', padding: 0 }}>
-            <li>Provide liquidity to earn 0.04% on every trade</li>
-            <li>Earn additional ASS token rewards</li>
-            <li>StableSwap algorithm ensures low slippage for stablecoin swaps</li>
+            <li>Provide liquidity to support stablecoin swaps</li>
+            <li>Simple deposit model - specify token amounts to add or remove</li>
+            <li>0.04% trading fee on every swap</li>
           </ul>
         </div>
       </div>

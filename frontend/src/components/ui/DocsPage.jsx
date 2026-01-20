@@ -216,7 +216,7 @@ const DocsPage = () => {
                     <p><strong>RPC URL:</strong> https://rpc-testnet.arc.io</p>
                     <p><strong>Chain ID:</strong> 5042002</p>
                     <p><strong>Currency Symbol:</strong> ARC</p>
-                    <p><strong>Explorer:</strong> https://testnet.explorer.arc.io</p>
+                    <p><strong>Explorer:</strong> https://testnet.arcscan.app</p>
                   </div>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>

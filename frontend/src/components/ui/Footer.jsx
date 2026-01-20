@@ -144,7 +144,7 @@ const Footer = () => {
                 Arc Network
               </a>
               <a
-                href="https://testnet.explorer.arc.io"
+                href="https://testnet.arcscan.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

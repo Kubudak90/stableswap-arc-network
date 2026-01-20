@@ -76,7 +76,7 @@ const DocsPage = () => {
           top: '100px',
           height: 'fit-content'
         }}>
-          <div className="card" style={{ padding: '1rem' }}>
+          <div className="card" style={{ padding: '1rem', backgroundColor: '#ffffff', borderRadius: '0.5rem' }}>
             <h3 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '1rem', color: '#1a1a1a' }}>
               Documentation
             </h3>
@@ -90,13 +90,13 @@ const DocsPage = () => {
                   textAlign: 'left',
                   padding: '0.5rem 0.75rem',
                   marginBottom: '0.25rem',
-                  backgroundColor: activeSection === section.id ? 'var(--accent)' : 'transparent',
+                  backgroundColor: activeSection === section.id ? '#f5f5f5' : 'transparent',
                   border: 'none',
                   borderRadius: '0.375rem',
                   cursor: 'pointer',
                   fontSize: '0.875rem',
-                  color: activeSection === section.id ? 'var(--foreground)' : 'var(--muted-foreground)',
-                  fontWeight: activeSection === section.id ? '500' : '400',
+                  color: '#1a1a1a',
+                  fontWeight: activeSection === section.id ? '600' : '400',
                   transition: 'all 0.2s'
                 }}
               >

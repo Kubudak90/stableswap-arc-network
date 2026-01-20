@@ -129,7 +129,7 @@ const Footer = () => {
                 GitHub
               </a>
               <a
-                href="https://arc.io"
+                href="https://www.arc.network"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

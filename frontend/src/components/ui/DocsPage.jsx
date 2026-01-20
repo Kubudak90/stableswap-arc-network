@@ -35,7 +35,7 @@ const DocsPage = () => {
       <span style={{ fontWeight: '500', minWidth: '120px' }}>{label}</span>
       <code style={{
         fontSize: '0.8rem',
-        color: 'var(--muted-foreground)',
+        color: 'var(--foreground)',
         wordBreak: 'break-all',
         flex: 1,
         textAlign: 'right'
@@ -77,7 +77,7 @@ const DocsPage = () => {
           height: 'fit-content'
         }}>
           <div className="card" style={{ padding: '1rem' }}>
-            <h3 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-foreground)' }}>
+            <h3 style={{ fontSize: '0.875rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--foreground)' }}>
               Documentation
             </h3>
             {sections.map((section) => (
@@ -117,7 +117,7 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1rem' }}>
                     Arc StableSwap Documentation
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
                     Welcome to Arc StableSwap - a decentralized stablecoin exchange built on Arc Network.
                   </p>
 
@@ -129,7 +129,7 @@ const DocsPage = () => {
                     marginBottom: '2rem'
                   }}>
                     <strong style={{ color: 'rgb(234, 179, 8)' }}>Testnet Notice:</strong>
-                    <span style={{ color: 'var(--muted-foreground)', marginLeft: '0.5rem' }}>
+                    <span style={{ color: 'var(--foreground)', marginLeft: '0.5rem' }}>
                       This platform runs on Arc Testnet. All tokens are test tokens with no real monetary value.
                     </span>
                   </div>
@@ -137,11 +137,11 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginTop: '2rem', marginBottom: '1rem' }}>
                     What is Arc StableSwap?
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     Arc StableSwap is an Automated Market Maker (AMM) protocol optimized for stablecoin swaps.
                     It uses the StableSwap invariant (similar to Curve Finance) to provide:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li><strong>Low Slippage:</strong> Minimal price impact on trades between stablecoins</li>
                     <li><strong>Capital Efficiency:</strong> Better rates for liquidity providers</li>
                     <li><strong>Low Fees:</strong> 0.04% swap fee on all trades</li>
@@ -154,25 +154,25 @@ const DocsPage = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>2-Pool</h4>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>
                         tUSDC/tUSDT pair for efficient stablecoin swaps
                       </p>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>3-Pool</h4>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>
                         tUSDC/tUSDT/tUSDY for broader liquidity
                       </p>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>LP Staking</h4>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>
                         Stake LP tokens to earn ASS rewards
                       </p>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>ASS Staking</h4>
-                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>
                         Stake ASS to earn protocol fees
                       </p>
                     </div>
@@ -190,7 +190,7 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     1. Install MetaMask
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     Download and install the MetaMask browser extension from{' '}
                     <a href="https://metamask.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>
                       metamask.io
@@ -200,7 +200,7 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     2. Connect to Arc Testnet
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     When you click "Connect Wallet", the app will automatically prompt you to add Arc Testnet.
                     If not, add it manually with these details:
                   </p>
@@ -222,10 +222,10 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     3. Get Test Tokens
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     You'll need ARC for gas fees and test stablecoins to use the platform:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li><strong>ARC:</strong> Get testnet ARC from the Arc Network faucet</li>
                     <li><strong>Test Stablecoins:</strong> Use our <Link to="/faucet" style={{ color: 'var(--primary)' }}>Faucet</Link> to get tUSDC, tUSDT, and tUSDY</li>
                   </ul>
@@ -233,7 +233,7 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     4. Start Using the Platform
                   </h2>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem' }}>
                     <li><Link to="/" style={{ color: 'var(--primary)' }}>Swap</Link> - Exchange stablecoins</li>
                     <li><Link to="/pools" style={{ color: 'var(--primary)' }}>Pools</Link> - Add liquidity and earn fees</li>
                     <li><Link to="/staking" style={{ color: 'var(--primary)' }}>Staking</Link> - Stake LP tokens for ASS rewards</li>
@@ -247,14 +247,14 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1.5rem' }}>
                     Swap
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     Swap between stablecoins with minimal slippage using our optimized StableSwap algorithm.
                   </p>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     How to Swap
                   </h2>
-                  <ol style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ol style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>Connect your wallet</li>
                     <li>Select the pool (2-Pool or 3-Pool)</li>
                     <li>Choose the tokens you want to swap</li>
@@ -266,7 +266,7 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     Fees & Slippage
                   </h2>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li><strong>Swap Fee:</strong> 0.04% per trade</li>
                     <li><strong>Admin Fee:</strong> 50% of swap fees go to ASS stakers</li>
                     <li><strong>Slippage Tolerance:</strong> Default 0.5% (adjustable in settings)</li>
@@ -278,11 +278,11 @@ const DocsPage = () => {
                   <div style={{ display: 'grid', gap: '1rem' }}>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600' }}>2-Pool</h4>
-                      <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>tUSDC ↔ tUSDT</p>
+                      <p style={{ color: 'var(--foreground)', fontSize: '0.875rem' }}>tUSDC ↔ tUSDT</p>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600' }}>3-Pool</h4>
-                      <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>tUSDC ↔ tUSDT ↔ tUSDY (any direction)</p>
+                      <p style={{ color: 'var(--foreground)', fontSize: '0.875rem' }}>tUSDC ↔ tUSDT ↔ tUSDY (any direction)</p>
                     </div>
                   </div>
                 </>
@@ -294,14 +294,14 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1.5rem' }}>
                     Liquidity Pools
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     Provide liquidity to earn swap fees and LP tokens that can be staked for additional rewards.
                   </p>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     How to Add Liquidity
                   </h2>
-                  <ol style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ol style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>Navigate to the Pools page</li>
                     <li>Select a pool (2-Pool or 3-Pool)</li>
                     <li>Enter the amount of tokens to deposit</li>
@@ -313,24 +313,24 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     LP Tokens
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     When you add liquidity, you receive LP (Liquidity Provider) tokens:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li><strong>ARC-2POOL-LP:</strong> LP token for the 2-Pool (tUSDC/tUSDT)</li>
                     <li><strong>ARC-3POOL-LP:</strong> LP token for the 3-Pool (tUSDC/tUSDT/tUSDY)</li>
                   </ul>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     LP tokens automatically accrue swap fees. You can also stake them for ASS rewards.
                   </p>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     Removing Liquidity
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     You can remove liquidity at any time:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem' }}>
                     <li>Withdraw in balanced proportions (all tokens)</li>
                     <li>Withdraw in a single token (with slippage)</li>
                   </ul>
@@ -343,17 +343,17 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1.5rem' }}>
                     Staking & Rewards
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     Earn additional rewards by staking your LP tokens or ASS tokens.
                   </p>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     LP Token Staking
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     Stake your LP tokens in the LiquidityRewards contract to earn ASS tokens:
                   </p>
-                  <ol style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ol style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>Add liquidity to a pool and receive LP tokens</li>
                     <li>Go to the Staking page</li>
                     <li>Select the LP Staking tab</li>
@@ -369,7 +369,7 @@ const DocsPage = () => {
                     marginBottom: '1.5rem'
                   }}>
                     <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Reward Rates</h4>
-                    <p style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>
+                    <p style={{ color: 'var(--foreground)', fontSize: '0.875rem' }}>
                       2-Pool LP: 1 ASS per block | 3-Pool LP: 1.5 ASS per block
                     </p>
                   </div>
@@ -377,10 +377,10 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     ASS Token Staking
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     Stake ASS tokens to earn a share of protocol fees:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>50% of all swap fees are distributed to ASS stakers</li>
                     <li>Fees are distributed in the tokens traded (tUSDC, tUSDT, tUSDY)</li>
                     <li>No lock-up period - unstake anytime</li>
@@ -394,7 +394,7 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1.5rem' }}>
                     Faucet
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     Get free test tokens to use on the platform.
                   </p>
 
@@ -404,22 +404,22 @@ const DocsPage = () => {
                   <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1.5rem' }}>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: '500' }}>tUSDC</span>
-                      <span style={{ color: 'var(--muted-foreground)' }}>Test USD Coin</span>
+                      <span style={{ color: 'var(--foreground)' }}>Test USD Coin</span>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: '500' }}>tUSDT</span>
-                      <span style={{ color: 'var(--muted-foreground)' }}>Test Tether</span>
+                      <span style={{ color: 'var(--foreground)' }}>Test Tether</span>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: '500' }}>tUSDY</span>
-                      <span style={{ color: 'var(--muted-foreground)' }}>Test USD Yield</span>
+                      <span style={{ color: 'var(--foreground)' }}>Test USD Yield</span>
                     </div>
                   </div>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     How to Use
                   </h2>
-                  <ol style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ol style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>Connect your wallet</li>
                     <li>Go to the <Link to="/faucet" style={{ color: 'var(--primary)' }}>Faucet</Link> page</li>
                     <li>Click "Claim Tokens"</li>
@@ -433,7 +433,7 @@ const DocsPage = () => {
                     borderRadius: '0.5rem'
                   }}>
                     <strong style={{ color: 'rgb(59, 130, 246)' }}>Note:</strong>
-                    <span style={{ color: 'var(--muted-foreground)', marginLeft: '0.5rem' }}>
+                    <span style={{ color: 'var(--foreground)', marginLeft: '0.5rem' }}>
                       There's a 24-hour cooldown between faucet claims for each address.
                     </span>
                   </div>
@@ -446,7 +446,7 @@ const DocsPage = () => {
                   <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '1.5rem' }}>
                     Contract Addresses
                   </h1>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     All contracts are deployed on Arc Testnet (Chain ID: 5042002).
                   </p>
 
@@ -491,25 +491,25 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     ASS Token (Arc StableSwap Token)
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1.5rem' }}>
                     ASS is the governance and utility token of Arc StableSwap.
                   </p>
 
                   <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Total Supply</h4>
-                      <p style={{ color: 'var(--muted-foreground)', fontSize: '1.25rem' }}>100,000,000 ASS</p>
+                      <p style={{ color: 'var(--foreground)', fontSize: '1.25rem' }}>100,000,000 ASS</p>
                     </div>
                     <div style={{ padding: '1rem', backgroundColor: 'var(--accent)', borderRadius: '0.5rem' }}>
                       <h4 style={{ fontWeight: '600', marginBottom: '0.5rem' }}>Decimals</h4>
-                      <p style={{ color: 'var(--muted-foreground)', fontSize: '1.25rem' }}>18</p>
+                      <p style={{ color: 'var(--foreground)', fontSize: '1.25rem' }}>18</p>
                     </div>
                   </div>
 
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     Utility
                   </h2>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li><strong>Fee Sharing:</strong> Stake ASS to earn protocol fees</li>
                     <li><strong>Governance:</strong> Vote on protocol parameters (future)</li>
                     <li><strong>Boosted Rewards:</strong> Higher staking rewards (future)</li>
@@ -518,10 +518,10 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     Emission Schedule
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     ASS tokens are emitted to LP stakers:
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                     <li>2-Pool stakers: 1 ASS per block</li>
                     <li>3-Pool stakers: 1.5 ASS per block</li>
                   </ul>
@@ -529,10 +529,10 @@ const DocsPage = () => {
                   <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
                     Test Stablecoins
                   </h2>
-                  <p style={{ color: 'var(--muted-foreground)', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--foreground)', marginBottom: '1rem' }}>
                     All stablecoins on this testnet platform use 6 decimals (like real USDC/USDT):
                   </p>
-                  <ul style={{ color: 'var(--muted-foreground)', paddingLeft: '1.5rem' }}>
+                  <ul style={{ color: 'var(--foreground)', paddingLeft: '1.5rem' }}>
                     <li><strong>tUSDC:</strong> Test USD Coin - 6 decimals</li>
                     <li><strong>tUSDT:</strong> Test Tether - 6 decimals</li>
                     <li><strong>tUSDY:</strong> Test USD Yield - 6 decimals</li>

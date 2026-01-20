@@ -127,19 +127,19 @@ contract LiquidityRewards is Ownable, Pausable, ReentrancyGuard {
      * @dev Kullanıcı pool'a likidite eklediğinde bu fonksiyon çağrılmalı
      * @dev Emission schedule'a göre eşit oranda (likidite miktarına göre proportiyonel) dağıtım yapılır
      * @param poolId Pool ID
-     * @param amount Eklenen likidite miktarı (reserve0 + reserve1 veya reserve0+reserve1+reserve2)
+     * @param amount Eklenen likidite miktarı (LP token amount)
      */
     function deposit(uint256 poolId, uint256 amount) external whenNotPaused nonReentrant {
         require(poolId < poolInfo.length, "Invalid pool");
         PoolInfo storage pool = poolInfo[poolId];
         require(pool.isActive, "Pool inactive");
         require(amount > 0, "Amount must be > 0");
-        
+
         // Önce pool'u güncelle (ödül birikimini başlat)
         updatePool(poolId);
-        
+
         UserInfo storage user = userInfo[poolId][msg.sender];
-        
+
         // Mevcut likiditesi varsa bekleyen ödülleri hesapla ve biriktir
         if (user.amount > 0) {
             // Bekleyen ödülleri hesapla (likidite miktarına göre proportiyonel)
@@ -148,12 +148,15 @@ contract LiquidityRewards is Ownable, Pausable, ReentrancyGuard {
                 user.pendingRewards += pending;
             }
         }
-        
+
+        // LP token'ları kullanıcıdan transfer et
+        IERC20(pool.poolContract).safeTransferFrom(msg.sender, address(this), amount);
+
         // Yeni likiditeyi ekle
         user.amount += amount;
         // Reward debt'i güncelle (eşit oranda dağıtım için)
         user.rewardDebt = (user.amount * pool.accRewardPerShare) / 1e18;
-        
+
         emit Deposit(msg.sender, poolId, amount);
     }
     
@@ -166,23 +169,28 @@ contract LiquidityRewards is Ownable, Pausable, ReentrancyGuard {
     function withdraw(uint256 poolId, uint256 amount) external whenNotPaused nonReentrant {
         require(poolId < poolInfo.length, "Invalid pool");
         PoolInfo storage pool = poolInfo[poolId];
-        
+
         // Önce pool'u güncelle (ödül birikimini güncelle)
         updatePool(poolId);
-        
+
         UserInfo storage user = userInfo[poolId][msg.sender];
         require(user.amount >= amount, "Insufficient amount");
-        
+
         // Bekleyen ödülleri hesapla
         uint256 pending = (user.amount * pool.accRewardPerShare) / 1e18 - user.rewardDebt;
         if (pending > 0) {
             user.pendingRewards += pending;
         }
-        
+
         // Likiditeyi çıkar
         user.amount -= amount;
         user.rewardDebt = (user.amount * pool.accRewardPerShare) / 1e18;
-        
+
+        // LP token'ları kullanıcıya geri gönder
+        if (amount > 0) {
+            IERC20(pool.poolContract).safeTransfer(msg.sender, amount);
+        }
+
         emit Withdraw(msg.sender, poolId, amount);
     }
     
@@ -295,51 +303,14 @@ contract LiquidityRewards is Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Pool'un likiditesini al
-     * @dev Pool kontratından rezerv bilgisini alır (reserve0 + reserve1 veya reserve0+reserve1+reserve2)
+     * @dev Bu kontratın tuttuğu LP token miktarını döner
      */
     function getPoolLiquidity(uint256 poolId) internal view returns (uint256) {
         require(poolId < poolInfo.length, "Invalid pool");
         PoolInfo memory pool = poolInfo[poolId];
-        
-        // StableSwap (2Pool) için
-        try this.getPoolLiquidity2Pool(pool.poolContract) returns (uint256 liquidity) {
-            return liquidity;
-        } catch {
-            // StableSwap3Pool için
-            try this.getPoolLiquidity3Pool(pool.poolContract) returns (uint256 liquidity) {
-                return liquidity;
-            } catch {
-                return 0;
-            }
-        }
-    }
-    
-    /**
-     * @notice 2Pool'dan likidite al (external view helper)
-     */
-    function getPoolLiquidity2Pool(address poolContract) external view returns (uint256) {
-        (bool success, bytes memory data) = poolContract.staticcall(
-            abi.encodeWithSignature("getReserves()")
-        );
-        if (!success || data.length < 64) return 0;
-        
-        (uint256 reserve0, uint256 reserve1) = abi.decode(data, (uint256, uint256));
-        // Likiditeyi reserve0 + reserve1 olarak hesapla (normalize edilmiş)
-        return reserve0 + reserve1;
-    }
-    
-    /**
-     * @notice 3Pool'dan likidite al (external view helper)
-     */
-    function getPoolLiquidity3Pool(address poolContract) external view returns (uint256) {
-        (bool success, bytes memory data) = poolContract.staticcall(
-            abi.encodeWithSignature("getReserves()")
-        );
-        if (!success || data.length < 96) return 0;
-        
-        (uint256 reserve0, uint256 reserve1, uint256 reserve2) = abi.decode(data, (uint256, uint256, uint256));
-        // Likiditeyi reserve0 + reserve1 + reserve2 olarak hesapla
-        return reserve0 + reserve1 + reserve2;
+
+        // Bu kontratın tuttuğu LP token miktarını döndür
+        return IERC20(pool.poolContract).balanceOf(address(this));
     }
 
     /**

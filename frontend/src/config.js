@@ -34,7 +34,7 @@ export const CONTRACTS = {
 
   // ASS Token Ecosystem
   assToken: import.meta.env.VITE_ASS_TOKEN || '0xe56151c58780ebB54e32257B3426a6Bc15e46C3C',
-  liquidityRewards: import.meta.env.VITE_LIQUIDITY_REWARDS || '0x05B4c54211D577295FBE52E9E84EED0F5F6bEC66',
+  liquidityRewards: import.meta.env.VITE_LIQUIDITY_REWARDS || '0x37A6EE425A14B246Ac2D56464b2A82655c09AA25',
   stakingContract: import.meta.env.VITE_STAKING_CONTRACT || '0x57Ca9Fff43CeFe73413C07e9a45453F5eC8D5bBD',
   feeDistributor: import.meta.env.VITE_FEE_DISTRIBUTOR || '0x9d5EC576F616Dc30CB8e743a6D5334F376ff8D58',
 

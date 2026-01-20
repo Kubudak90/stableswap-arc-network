@@ -19,27 +19,27 @@ export const NETWORK = {
 
 // Contract Addresses
 export const CONTRACTS = {
-  // Tokens
-  testUSDC: import.meta.env.VITE_TEST_USDC || '0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733',
-  testUSDT: import.meta.env.VITE_TEST_USDT || '0x787804d1f98F4Da65C6de63AaA00906A8C6868F3',
-  testUSDY: import.meta.env.VITE_TEST_USDY || '0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a',
+  // Tokens (6 decimals - mintable)
+  testUSDC: import.meta.env.VITE_TEST_USDC || '0x55A97f0A3BA1f192Cf333bac116bb75eCE5d176e',
+  testUSDT: import.meta.env.VITE_TEST_USDT || '0xDBffb8fFF6492d4100DA3cC2E6775c21F7413d70',
+  testUSDY: import.meta.env.VITE_TEST_USDY || '0x75979405a2955Cac025Ce95b852321b172B14a97',
 
   // Swap Pools V2 (with LP token + Fee Distribution to FeeDistributor)
-  swap: import.meta.env.VITE_SWAP_2POOL || '0xB19eb9Cf58e5F55091798996F18351b71Cbc1a01',
-  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0x312858D2935a89512bB4C614e23c5E3d09ba4cB0',
+  swap: import.meta.env.VITE_SWAP_2POOL || '0x81fEDF05DEaD9a49B4295B54201F4e35238fB59b',
+  swap3Pool: import.meta.env.VITE_SWAP_3POOL || '0xE8513b949C9034Ce25712482bC0c622aFbbC9B7d',
 
   // LP Tokens V2
-  lp2Pool: import.meta.env.VITE_LP_2POOL || '0xA1162d71D509Fe5F1C65725Be44cAA705e9DDe23',
-  lp3Pool: import.meta.env.VITE_LP_3POOL || '0x9c27A4c32Eca2Dc5873E149D7c73cb0342d2F9F5',
+  lp2Pool: import.meta.env.VITE_LP_2POOL || '0xAF345f9e6BcD1D380f79e111D3Fd94615B61C733',
+  lp3Pool: import.meta.env.VITE_LP_3POOL || '0x402Ca9FBc2770dC54FE4806DDe64f179388dfb88',
 
   // ASS Token Ecosystem
   assToken: import.meta.env.VITE_ASS_TOKEN || '0xe56151c58780ebB54e32257B3426a6Bc15e46C3C',
-  liquidityRewards: import.meta.env.VITE_LIQUIDITY_REWARDS || '0x37A6EE425A14B246Ac2D56464b2A82655c09AA25',
+  liquidityRewards: import.meta.env.VITE_LIQUIDITY_REWARDS || '0xC15202674e180260d8832FA88a0f8a2346befcCD',
   stakingContract: import.meta.env.VITE_STAKING_CONTRACT || '0x57Ca9Fff43CeFe73413C07e9a45453F5eC8D5bBD',
   feeDistributor: import.meta.env.VITE_FEE_DISTRIBUTOR || '0x9d5EC576F616Dc30CB8e743a6D5334F376ff8D58',
 
   // Faucet
-  faucetV3: import.meta.env.VITE_FAUCET_V3 || '0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0'
+  faucetV3: import.meta.env.VITE_FAUCET_V3 || '0x20A2C2e424c490bC0459C6a1B865585F9949694b'
 }
 
 // Default Settings

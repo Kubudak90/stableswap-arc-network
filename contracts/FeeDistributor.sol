@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ASSToken} from "./ASSToken.sol";
 import {StakingContract} from "./StakingContract.sol";
 
@@ -11,8 +13,9 @@ import {StakingContract} from "./StakingContract.sol";
  * @title FeeDistributor
  * @notice Swap fee'lerini toplayıp dağıtan kontrat
  * @dev Fee dağılımı: %45 staker, %45 buyback (%10 maaş, %90 burn), %10 treasury
+ * ReentrancyGuard ve Pausable ile güvenli
  */
-contract FeeDistributor is Ownable {
+contract FeeDistributor is Ownable, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     ASSToken public immutable assToken;
@@ -21,10 +24,11 @@ contract FeeDistributor is Ownable {
     address[] public swapContracts;
     
     // Fee dağılım oranları (basis points - 10000 = %100)
-    uint256 public constant STAKER_SHARE = 4500; // %45
+    uint256 public constant BPS = 10000;          // Basis points tabanı
+    uint256 public constant STAKER_SHARE = 4500;  // %45
     uint256 public constant BUYBACK_SHARE = 4500; // %45
     uint256 public constant TREASURY_SHARE = 1000; // %10
-    
+
     // Buyback içindeki maaş oranı (buyback'in %10'u)
     uint256 public constant SALARY_SHARE_OF_BUYBACK = 1000; // Buyback'in %10'u
     
@@ -62,19 +66,37 @@ contract FeeDistributor is Ownable {
         address _salaryAddress,
         address _buybackToken
     ) Ownable(msg.sender) {
+        require(_assToken != address(0), "FeeDistributor: assToken zero address");
+        require(_treasury != address(0), "FeeDistributor: treasury zero address");
+        require(_salaryAddress != address(0), "FeeDistributor: salaryAddress zero address");
+        require(_buybackToken != address(0), "FeeDistributor: buybackToken zero address");
         assToken = ASSToken(_assToken);
         treasury = _treasury;
         salaryAddress = _salaryAddress;
         buybackToken = IERC20(_buybackToken);
-        
-        require(STAKER_SHARE + BUYBACK_SHARE + TREASURY_SHARE == 10000, "FeeDistributor: Invalid fee shares");
+
+        require(STAKER_SHARE + BUYBACK_SHARE + TREASURY_SHARE == BPS, "FeeDistributor: Invalid fee shares");
+    }
+
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     /**
      * @notice Swap kontratından fee topla (sadece swap kontratları çağırabilir)
      * @dev Token zaten swap kontratı tarafından transfer edilmiş olmalı
      */
-    function collectFee(address token, uint256 amount) external {
+    function collectFee(address token, uint256 amount) external whenNotPaused {
         require(isSwapContract(msg.sender), "FeeDistributor: Only swap contracts can collect fees");
         require(amount > 0, "FeeDistributor: Amount must be > 0");
         
@@ -95,7 +117,8 @@ contract FeeDistributor is Ownable {
      * @notice Toplanan fee'leri dağıt
      * @param token Fee'nin toplandığı token (stablecoin)
      */
-    function distributeFees(address token) external {
+    function distributeFees(address token) external whenNotPaused nonReentrant {
+        require(token != address(0), "FeeDistributor: token zero address");
         IERC20 feeToken = IERC20(token);
         
         // Gerçek balance'ı kontrol et
@@ -105,15 +128,17 @@ contract FeeDistributor is Ownable {
             return;
         }
         
-        // Toplanan fee kayıtlarını topla
+        // Toplanan fee kayıtlarını topla (gas optimization: cache length)
         uint256 totalCollected = 0;
-        for (uint256 i = 0; i < swapContracts.length; i++) {
+        uint256 swapContractsLength = swapContracts.length;
+        for (uint256 i = 0; i < swapContractsLength; ) {
             uint256 collected = collectedFees[swapContracts[i]];
             if (collected > 0) {
                 totalCollected += collected;
                 // Mapping'i sıfırla (gerçek balance kullanılacak)
                 collectedFees[swapContracts[i]] = 0;
             }
+            unchecked { ++i; }
         }
         
         // ÖNEMLİ: Gerçek balance'ı kullan (mapping'deki miktar yanlış olabilir)
@@ -129,7 +154,7 @@ contract FeeDistributor is Ownable {
         if (distributableAmount == 0) return;
         
         // %45 Staker'lara (staking kontratına gönder)
-        uint256 stakerAmount = (distributableAmount * STAKER_SHARE) / 10000;
+        uint256 stakerAmount = (distributableAmount * STAKER_SHARE) / BPS;
         if (stakerAmount > 0 && stakingContract != address(0)) {
             // Staking kontratına stablecoin transfer et
             feeToken.safeTransfer(stakingContract, stakerAmount);
@@ -139,7 +164,7 @@ contract FeeDistributor is Ownable {
         }
         
         // %45 Buyback
-        uint256 buybackAmount = (distributableAmount * BUYBACK_SHARE) / 10000;
+        uint256 buybackAmount = (distributableAmount * BUYBACK_SHARE) / BPS;
         if (buybackAmount > 0) {
             if (autoBuyback != address(0)) {
                 // AutoBuyback kontratına gönder (otomatik buyback yapacak)
@@ -147,7 +172,7 @@ contract FeeDistributor is Ownable {
                 // AutoBuyback kontratı buyback'i kendi içinde yönetecek
             } else {
                 // Fallback: Eski mekanizma (AutoBuyback yoksa)
-                uint256 salaryAmount = (buybackAmount * SALARY_SHARE_OF_BUYBACK) / 10000;
+                uint256 salaryAmount = (buybackAmount * SALARY_SHARE_OF_BUYBACK) / BPS;
                 uint256 burnAmount = buybackAmount - salaryAmount;
                 
                 if (salaryAmount > 0 && salaryAddress != address(0)) {
@@ -161,7 +186,7 @@ contract FeeDistributor is Ownable {
         }
         
         // %10 Treasury
-        uint256 treasuryAmount = (distributableAmount * TREASURY_SHARE) / 10000;
+        uint256 treasuryAmount = (distributableAmount * TREASURY_SHARE) / BPS;
         if (treasuryAmount > 0 && treasury != address(0)) {
             feeToken.safeTransfer(treasury, treasuryAmount);
         }
@@ -170,8 +195,8 @@ contract FeeDistributor is Ownable {
             stakerAmount,
             buybackAmount,
             treasuryAmount,
-            buybackAmount > 0 ? (buybackAmount * SALARY_SHARE_OF_BUYBACK) / 10000 : 0,
-            buybackAmount > 0 ? buybackAmount - ((buybackAmount * SALARY_SHARE_OF_BUYBACK) / 10000) : 0
+            buybackAmount > 0 ? (buybackAmount * SALARY_SHARE_OF_BUYBACK) / BPS : 0,
+            buybackAmount > 0 ? buybackAmount - ((buybackAmount * SALARY_SHARE_OF_BUYBACK) / BPS) : 0
         );
     }
 
@@ -191,14 +216,16 @@ contract FeeDistributor is Ownable {
      */
     function removeSwapContract(address swapContract) external onlyOwner {
         require(isSwapContract(swapContract), "FeeDistributor: Not found");
-        
-        for (uint256 i = 0; i < swapContracts.length; i++) {
+
+        uint256 length = swapContracts.length;
+        for (uint256 i = 0; i < length; ) {
             if (swapContracts[i] == swapContract) {
-                swapContracts[i] = swapContracts[swapContracts.length - 1];
+                swapContracts[i] = swapContracts[length - 1];
                 swapContracts.pop();
                 emit SwapContractRemoved(swapContract);
                 break;
             }
+            unchecked { ++i; }
         }
     }
 
@@ -254,10 +281,12 @@ contract FeeDistributor is Ownable {
      * @notice Swap kontratı mı kontrol et
      */
     function isSwapContract(address contractAddress) public view returns (bool) {
-        for (uint256 i = 0; i < swapContracts.length; i++) {
+        uint256 length = swapContracts.length;
+        for (uint256 i = 0; i < length; ) {
             if (swapContracts[i] == contractAddress) {
                 return true;
             }
+            unchecked { ++i; }
         }
         return false;
     }

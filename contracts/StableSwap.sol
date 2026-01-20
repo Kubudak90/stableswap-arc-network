@@ -3,24 +3,28 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {FeeDistributor} from "./FeeDistributor.sol";
 
 /**
  * @title StableSwap
  * @notice Basit stabilcoin swap - 1:1 oranı korur, fee distribution entegre
+ * @dev Ownable, Pausable ve ReentrancyGuard ile güvenli
  */
-contract StableSwap {
+contract StableSwap is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token0;
     IERC20 public immutable token1;
-    
+
     uint256 public reserve0;
     uint256 public reserve1;
-    
+
     uint256 public constant FEE_BPS = 4; // 0.04% fee (4 bps)
     uint256 public constant BPS = 10000;
-    
+
     FeeDistributor public feeDistributor;
 
     event Swap(address indexed user, bool zeroForOne, uint256 amountIn, uint256 amountOut);
@@ -28,45 +32,62 @@ contract StableSwap {
     event RemoveLiquidity(address indexed provider, uint256 amount0, uint256 amount1);
     event FeeDistributorUpdated(address indexed oldDistributor, address indexed newDistributor);
 
-    constructor(address _token0, address _token1) {
+    constructor(address _token0, address _token1) Ownable(msg.sender) {
+        require(_token0 != address(0), "StableSwap: token0 zero address");
+        require(_token1 != address(0), "StableSwap: token1 zero address");
+        require(_token0 != _token1, "StableSwap: identical tokens");
         token0 = IERC20(_token0);
         token1 = IERC20(_token1);
     }
-    
+
     /**
-     * @notice Fee distributor'ı ayarla
+     * @notice Fee distributor'ı ayarla (sadece owner)
      */
-    function setFeeDistributor(address _feeDistributor) external {
-        // İlk kez ayarlanıyorsa herkes ayarlayabilir, sonra sadece owner
-        // Şimdilik basit tutuyoruz
+    function setFeeDistributor(address _feeDistributor) external onlyOwner {
+        require(_feeDistributor != address(0), "StableSwap: zero address");
         address oldDistributor = address(feeDistributor);
         feeDistributor = FeeDistributor(_feeDistributor);
         emit FeeDistributorUpdated(oldDistributor, _feeDistributor);
     }
 
-    function addLiquidity(uint256 amount0, uint256 amount1) external {
+    /**
+     * @notice Emergency pause (sadece owner)
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @notice Unpause (sadece owner)
+     */
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    function addLiquidity(uint256 amount0, uint256 amount1) external whenNotPaused nonReentrant {
+        require(amount0 > 0 || amount1 > 0, "StableSwap: zero amounts");
         token0.safeTransferFrom(msg.sender, address(this), amount0);
         token1.safeTransferFrom(msg.sender, address(this), amount1);
-        
+
         reserve0 += amount0;
         reserve1 += amount1;
-        
+
         emit AddLiquidity(msg.sender, amount0, amount1);
     }
 
-    function removeLiquidity(uint256 amount0, uint256 amount1) external {
+    function removeLiquidity(uint256 amount0, uint256 amount1) external whenNotPaused nonReentrant {
         require(reserve0 >= amount0 && reserve1 >= amount1, "Insufficient liquidity");
-        
+
         reserve0 -= amount0;
         reserve1 -= amount1;
-        
+
         token0.safeTransfer(msg.sender, amount0);
         token1.safeTransfer(msg.sender, amount1);
-        
+
         emit RemoveLiquidity(msg.sender, amount0, amount1);
     }
 
-    function swap(bool zeroForOne, uint256 amountIn) external returns (uint256 amountOut) {
+    function swap(bool zeroForOne, uint256 amountIn) external whenNotPaused nonReentrant returns (uint256 amountOut) {
         require(amountIn > 0, "Invalid amount");
         
         if (zeroForOne) {
@@ -126,10 +147,63 @@ contract StableSwap {
         return (reserve0, reserve1);
     }
 
-    function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256) {
+    function getAmountOut(uint256 amountIn, bool /* zeroForOne */) external pure returns (uint256) {
         if (amountIn == 0) return 0;
-        
+
         // Stabilcoin için 1:1 oran + küçük fee
         return amountIn * (BPS - FEE_BPS) / BPS;
     }
+
+    // ------------------ Emergency Functions ------------------
+
+    /**
+     * @notice Acil durum token çekme - sadece pause durumunda ve owner tarafından
+     * @param token Çekilecek token adresi
+     * @param to Alıcı adres
+     * @param amount Çekilecek miktar
+     */
+    function emergencyWithdraw(
+        address token,
+        address to,
+        uint256 amount
+    ) external onlyOwner whenPaused {
+        require(to != address(0), "StableSwap: to zero address");
+        require(amount > 0, "StableSwap: amount zero");
+
+        IERC20(token).safeTransfer(to, amount);
+
+        // Rezervleri güncelle
+        if (token == address(token0)) {
+            reserve0 = token0.balanceOf(address(this));
+        } else if (token == address(token1)) {
+            reserve1 = token1.balanceOf(address(this));
+        }
+
+        emit EmergencyWithdraw(token, to, amount);
+    }
+
+    /**
+     * @notice Tüm tokenları çek (acil durum)
+     */
+    function emergencyWithdrawAll(address to) external onlyOwner whenPaused {
+        require(to != address(0), "StableSwap: to zero address");
+
+        uint256 balance0 = token0.balanceOf(address(this));
+        uint256 balance1 = token1.balanceOf(address(this));
+
+        if (balance0 > 0) {
+            token0.safeTransfer(to, balance0);
+        }
+        if (balance1 > 0) {
+            token1.safeTransfer(to, balance1);
+        }
+
+        reserve0 = 0;
+        reserve1 = 0;
+
+        emit EmergencyWithdrawAll(to, balance0, balance1);
+    }
+
+    event EmergencyWithdraw(address indexed token, address indexed to, uint256 amount);
+    event EmergencyWithdrawAll(address indexed to, uint256 amount0, uint256 amount1);
 }

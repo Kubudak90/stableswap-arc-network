@@ -62,17 +62,22 @@ function SwapPanel({ contracts, account }) {
     try {
       const amountInWei = ethers.parseUnits(amountIn, 6)
       
-      // Approve token (skip allowance check for now)
+      // Approve token
       const tokenContract = zeroForOne ? contracts.token0 : contracts.token1
-      const swapAddress = "0xab9743e9715FFb5C5FC11Eb203937edA0C00c105" // StableSwap
-      
+      const swapAddress = await contracts.swap.getAddress()
+
       console.log("Approving token...")
       const approveTx = await tokenContract.approve(swapAddress, amountInWei)
       await approveTx.wait()
       console.log("Token approved")
-      
-      // Execute swap
-      const swapTx = await contracts.swap.swap(zeroForOne, amountInWei)
+
+      // Calculate minAmountOut with slippage
+      const expectedOutWei = amountInWei * 9996n / 10000n // 0.04% fee
+      const slippageBps = Math.round(parseFloat(slippage) * 100) // Convert percent to bps
+      const minAmountOutWei = expectedOutWei - (expectedOutWei * BigInt(slippageBps) / 10000n)
+
+      // Execute swap with minAmountOut
+      const swapTx = await contracts.swap.swap(zeroForOne, amountInWei, minAmountOutWei)
       await swapTx.wait()
       
       setSuccess(`✅ Başarılı! ${amountIn} ${zeroForOne ? token0Symbol : token1Symbol} → ${amountOut} ${zeroForOne ? token1Symbol : token0Symbol}`)

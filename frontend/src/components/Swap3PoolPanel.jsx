@@ -62,15 +62,20 @@ function Swap3PoolPanel({ contracts, account }) {
       
       // Approve token
       const tokenContract = tokenContracts[tokenIn]
-      const swapAddress = "0xa904a6FC1c8dc6B23790f823A4e523FC5fC85B09"
-      
+      const swapAddress = await contracts.swap3Pool.getAddress()
+
       console.log("Approving token...")
       const approveTx = await tokenContract.approve(swapAddress, amountInWei)
       await approveTx.wait()
       console.log("Token approved")
-      
-      // Execute swap
-      const swapTx = await contracts.swap3Pool.swap(tokenIn, tokenOut, amountInWei)
+
+      // Calculate minAmountOut with slippage
+      const expectedOutWei = amountInWei * 9996n / 10000n // 0.04% fee
+      const slippageBps = Math.round(parseFloat(slippage) * 100) // Convert percent to bps
+      const minAmountOutWei = expectedOutWei - (expectedOutWei * BigInt(slippageBps) / 10000n)
+
+      // Execute swap with minAmountOut
+      const swapTx = await contracts.swap3Pool.swap(tokenIn, tokenOut, amountInWei, minAmountOutWei)
       await swapTx.wait()
       
       setSuccess(`✅ Başarılı! ${amountIn} ${tokenNames[tokenIn]} → ${amountOut} ${tokenNames[tokenOut]}`)

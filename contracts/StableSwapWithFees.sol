@@ -124,9 +124,9 @@ contract StableSwapWithFees is Ownable {
         return (reserve0, reserve1);
     }
 
-    function getAmountOut(uint256 amountIn, bool zeroForOne) external view returns (uint256) {
+    function getAmountOut(uint256 amountIn, bool /* zeroForOne */) external pure returns (uint256) {
         if (amountIn == 0) return 0;
-        
+
         // Stabilcoin için 1:1 oran + fee
         uint256 fee = (amountIn * FEE_BPS) / BPS;
         return amountIn - fee;

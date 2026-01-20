@@ -94,6 +94,19 @@ const Footer = () => {
               Contact & Resources
             </h4>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Link
+                to="/docs"
+                style={{
+                  fontSize: '0.875rem',
+                  color: 'var(--muted-foreground)',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.target.style.color = 'var(--muted-foreground)'}
+              >
+                Documentation
+              </Link>
               <a
                 href="https://github.com/Kubudak90/stableswap-arc-network"
                 target="_blank"

@@ -308,6 +308,7 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
           <NavLink to="/pools">Pools</NavLink>
           <NavLink to="/staking">Stake</NavLink>
           <NavLink to="/faucet">Faucet</NavLink>
+          <NavLink to="/docs">Docs</NavLink>
           <a
             href="https://faucet.circle.com/"
             target="_blank"

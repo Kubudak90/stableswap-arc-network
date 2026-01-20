@@ -13,6 +13,7 @@ import FaucetCard from './components/ui/FaucetCard'
 import Footer from './components/ui/Footer'
 import PrivacyPolicy from './components/ui/PrivacyPolicy'
 import TermsOfService from './components/ui/TermsOfService'
+import DocsPage from './components/ui/DocsPage'
 
 // Styles
 import './styles/shadcn.css'
@@ -303,6 +304,7 @@ function App() {
           } />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/docs" element={<DocsPage />} />
         </Routes>
         <Footer />
       </div>

@@ -10,6 +10,9 @@ import PoolCard from './components/ui/PoolCard'
 import PoolsPage from './components/ui/PoolsPage'
 import StakingCard from './components/ui/StakingCard'
 import FaucetCard from './components/ui/FaucetCard'
+import Footer from './components/ui/Footer'
+import PrivacyPolicy from './components/ui/PrivacyPolicy'
+import TermsOfService from './components/ui/TermsOfService'
 
 // Styles
 import './styles/shadcn.css'
@@ -247,7 +250,7 @@ function App() {
 
   return (
     <Router>
-      <div className="shadcn-app">
+      <div className="shadcn-app" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <Header
           account={account}
           connectWallet={connectWallet}
@@ -298,7 +301,10 @@ function App() {
               account={account}
             />
           } />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   )

@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-
-// Import contract addresses
-const CONTRACTS = {
-  testUSDC: "0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733",
-  testUSDT: "0x787804d1f98F4Da65C6de63AaA00906A8C6868F3",
-  testUSDY: "0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a"
-}
+import { CONTRACTS } from '../config'
 
 function FaucetPanel({ contracts, account }) {
   const [loading, setLoading] = useState(false)
@@ -19,8 +13,8 @@ function FaucetPanel({ contracts, account }) {
   const [refillLoading, setRefillLoading] = useState(false)
   const [faucetBalances, setFaucetBalances] = useState({ usdc: '0', usdt: '0', usdy: '0' })
 
-  // Faucet V3 contract address (with developer support)
-  const FAUCET_ADDRESS = "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0"
+  // Faucet V3 contract address (from config)
+  const FAUCET_ADDRESS = CONTRACTS.faucetV3
   const DEVELOPER_ADDRESS = "0x1D58328205429D39cE21a13DcD3FeB73180C9B20"
 
   // Faucet V3 ABI

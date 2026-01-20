@@ -65,14 +65,14 @@ const TokenIcon = ({ symbol, size = 40 }) => {
   )
 }
 
-// Contract addresses
+// Use addresses from config
 const TOKEN_ADDRESSES = {
-  testUSDC: "0x1eccf89268C90C5Ac954ed020Ca498D96F9f9733",
-  testUSDT: "0x787804d1f98F4Da65C6de63AaA00906A8C6868F3",
-  testUSDY: "0x4D81e87902aA4Cf67D99055D44b6D0341fCc419a"
+  testUSDC: CONTRACTS.testUSDC,
+  testUSDT: CONTRACTS.testUSDT,
+  testUSDY: CONTRACTS.testUSDY
 }
 
-const FAUCET_ADDRESS = "0xdbF8fC63B9cFa254B1b6eD80fa40927271A4dfC0"
+const FAUCET_ADDRESS = CONTRACTS.faucetV3
 const DEVELOPER_ADDRESS = "0x1D58328205429D39cE21a13DcD3FeB73180C9B20"
 
 const FAUCET_ABI = [

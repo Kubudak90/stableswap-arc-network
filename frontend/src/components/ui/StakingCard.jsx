@@ -54,6 +54,31 @@ const ERC20_ABI = [
   "function symbol() view returns (string)"
 ]
 
+const POOL_V2_ABI = [
+  "function collectedFees0() view returns (uint256)",
+  "function collectedFees1() view returns (uint256)",
+  "function collectFees() external returns (uint256, uint256)"
+]
+
+const POOL_3V2_ABI = [
+  "function collectedFees0() view returns (uint256)",
+  "function collectedFees1() view returns (uint256)",
+  "function collectedFees2() view returns (uint256)",
+  "function collectFees() external returns (uint256, uint256, uint256)"
+]
+
+const FEE_DISTRIBUTOR_ABI = [
+  "function distributeFees(address token) external"
+]
+
+// Refresh Icon
+const RefreshIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M23 4v6h-6M1 20v-6h6"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+)
+
 // Token Icon
 const TokenIcon = ({ symbol, size = 32, color = '#fc72ff' }) => (
   <div
@@ -120,6 +145,8 @@ function StakingCard({ provider, signer, account, contracts }) {
   const [success, setSuccess] = useState('')
   const [txHash, setTxHash] = useState('')
   const [rewardToken, setRewardToken] = useState(null)
+  const [pendingFees, setPendingFees] = useState({ pool2: '0', pool3: '0' })
+  const [feeLoading, setFeeLoading] = useState(false)
 
   useEffect(() => {
     if (provider && account && contracts.stakingContract) {
@@ -158,6 +185,85 @@ function StakingCard({ provider, signer, account, contracts }) {
       setRewardToken({ address: rewardTokenAddress, symbol: rewardSymbol, decimals: rewardDecimals })
     } catch (err) {
       console.error('Load data error:', err)
+    }
+
+    // Load pending fees from pools
+    try {
+      const pool2 = new ethers.Contract(CONTRACTS.swap, POOL_V2_ABI, provider)
+      const pool3 = new ethers.Contract(CONTRACTS.swap3Pool, POOL_3V2_ABI, provider)
+
+      const fees2_0 = await pool2.collectedFees0()
+      const fees2_1 = await pool2.collectedFees1()
+      const fees3_0 = await pool3.collectedFees0()
+      const fees3_1 = await pool3.collectedFees1()
+      const fees3_2 = await pool3.collectedFees2()
+
+      const pool2Total = parseFloat(ethers.formatUnits(fees2_0, 6)) + parseFloat(ethers.formatUnits(fees2_1, 6))
+      const pool3Total = parseFloat(ethers.formatUnits(fees3_0, 6)) + parseFloat(ethers.formatUnits(fees3_1, 6)) + parseFloat(ethers.formatUnits(fees3_2, 6))
+
+      setPendingFees({
+        pool2: pool2Total.toFixed(4),
+        pool3: pool3Total.toFixed(4)
+      })
+    } catch (err) {
+      console.error('Load pending fees error:', err)
+    }
+  }
+
+  const handleCollectAndDistribute = async () => {
+    if (!signer) {
+      setError('Please connect wallet')
+      return
+    }
+
+    setFeeLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const pool2 = new ethers.Contract(CONTRACTS.swap, POOL_V2_ABI, signer)
+      const pool3 = new ethers.Contract(CONTRACTS.swap3Pool, POOL_3V2_ABI, signer)
+      const feeDistributor = new ethers.Contract(CONTRACTS.feeDistributor, FEE_DISTRIBUTOR_ABI, signer)
+
+      // Step 1: Collect fees from 2Pool
+      const fees2_0 = await pool2.collectedFees0()
+      const fees2_1 = await pool2.collectedFees1()
+      if (fees2_0 > 0 || fees2_1 > 0) {
+        const tx1 = await pool2.collectFees()
+        await tx1.wait()
+      }
+
+      // Step 2: Collect fees from 3Pool
+      const fees3_0 = await pool3.collectedFees0()
+      const fees3_1 = await pool3.collectedFees1()
+      const fees3_2 = await pool3.collectedFees2()
+      if (fees3_0 > 0 || fees3_1 > 0 || fees3_2 > 0) {
+        const tx2 = await pool3.collectFees()
+        await tx2.wait()
+      }
+
+      // Step 3: Distribute fees for each token
+      const tokens = [CONTRACTS.testUSDC, CONTRACTS.testUSDT, CONTRACTS.testUSDY]
+      for (const token of tokens) {
+        try {
+          const tokenContract = new ethers.Contract(token, ERC20_ABI, provider)
+          const balance = await tokenContract.balanceOf(CONTRACTS.feeDistributor)
+          if (balance > 0) {
+            const tx = await feeDistributor.distributeFees(token)
+            await tx.wait()
+          }
+        } catch (e) {
+          console.log('Distribute error for token:', token, e.message)
+        }
+      }
+
+      setSuccess('Fees collected and distributed to stakers!')
+      await loadData()
+    } catch (err) {
+      console.error('Collect/Distribute error:', err)
+      setError(err.reason || err.message || 'Fee collection failed')
+    } finally {
+      setFeeLoading(false)
     }
   }
 
@@ -343,6 +449,83 @@ function StakingCard({ provider, signer, account, contracts }) {
             <GiftIcon />
             Claim {parseFloat(pendingRewards).toFixed(4)} {rewardToken?.symbol || 'Rewards'}
           </button>
+        )}
+
+        {/* Fee Collection Section */}
+        {(parseFloat(pendingFees.pool2) > 0 || parseFloat(pendingFees.pool3) > 0) && (
+          <div style={{
+            background: 'var(--background-secondary)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px'
+            }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                Pending Swap Fees
+              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Anyone can collect
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                flex: 1,
+                background: 'var(--background-tertiary)',
+                borderRadius: '8px',
+                padding: '10px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>2-Pool</div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>${pendingFees.pool2}</div>
+              </div>
+              <div style={{
+                flex: 1,
+                background: 'var(--background-tertiary)',
+                borderRadius: '8px',
+                padding: '10px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>3-Pool</div>
+                <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)' }}>${pendingFees.pool3}</div>
+              </div>
+            </div>
+            <button
+              onClick={handleCollectAndDistribute}
+              disabled={feeLoading}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'linear-gradient(135deg, #4c82fb 0%, #3b6de0 100%)',
+                border: 'none',
+                borderRadius: '10px',
+                color: 'white',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: feeLoading ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {feeLoading ? (
+                <>
+                  <span className="spinner" style={{ width: 16, height: 16 }}></span>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <RefreshIcon />
+                  Collect & Distribute Fees
+                </>
+              )}
+            </button>
+          </div>
         )}
 
         {/* Tabs */}

@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer style={{
       marginTop: 'auto',
-      padding: '2rem 1rem',
+      padding: 'clamp(1rem, 4vw, 2rem) clamp(0.75rem, 3vw, 1rem)',
       borderTop: '1px solid var(--border)',
       backgroundColor: 'var(--card)',
     }}>
@@ -21,10 +21,10 @@ const Footer = () => {
           display: 'flex',
           flexWrap: 'wrap',
           justifyContent: 'space-between',
-          gap: '2rem',
+          gap: 'clamp(1rem, 4vw, 2rem)',
         }}>
           {/* Brand Section */}
-          <div style={{ flex: '1', minWidth: '200px' }}>
+          <div style={{ flex: '1', minWidth: '180px' }}>
             <h3 style={{
               fontSize: '1.25rem',
               fontWeight: '700',

@@ -837,25 +837,354 @@
 }
 
 /* ==================== RESPONSIVE ==================== */
-@media (max-width: 520px) {
-  .swap-card,
-  .pool-card {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+
+/* Tablet breakpoint */
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--spacing-md);
+    padding-top: 80px;
   }
 
-  .page-container {
+  .swap-card,
+  .pool-card {
+    max-width: 100%;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    margin: 0 auto;
+  }
+
+  .swap-card-header {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .swap-card-title {
+    font-size: 0.95rem;
+  }
+
+  .token-input {
+    font-size: 1.75rem;
+  }
+
+  .token-input-container {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+
+  .token-input-row {
+    gap: var(--spacing-sm);
+  }
+
+  .token-selector {
+    padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-xs);
+  }
+
+  .token-selector-text {
+    font-size: 0.9rem;
+  }
+
+  .token-balance-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .swap-direction-container {
+    margin: -8px 0;
+  }
+
+  .swap-direction-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .swap-details {
+    padding: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  .swap-detail-row {
+    padding: var(--spacing-xs) 0;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .pool-tabs {
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .pool-tab {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
+  }
+
+  .pool-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .pool-stat-card {
+    padding: var(--spacing-md);
+  }
+
+  .pool-stat-label {
+    font-size: 0.7rem;
+  }
+
+  .pool-stat-value {
+    font-size: 1rem;
+  }
+
+  .slippage-options {
+    flex-wrap: wrap;
+  }
+
+  .slippage-option {
+    flex: 1 1 auto;
+    min-width: 60px;
+    padding: var(--spacing-sm);
+    font-size: 0.8rem;
+  }
+
+  .slippage-custom {
+    flex: 1 1 100%;
+    margin-top: var(--spacing-xs);
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 100%;
+    margin: var(--spacing-md);
     padding: var(--spacing-lg);
-    padding-top: 80px;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .token-list-item {
+    padding: var(--spacing-md);
+  }
+
+  .rainbow-button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  .alert {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .page-container {
+    padding: var(--spacing-sm);
+    padding-top: 72px;
+  }
+
+  .swap-card,
+  .pool-card {
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
   }
 
   .token-input {
     font-size: 1.5rem;
   }
 
+  .token-input-container {
+    padding: var(--spacing-sm);
+  }
+
+  .token-input-label {
+    font-size: 0.8rem;
+  }
+
+  .token-selector {
+    padding: 4px 8px 4px 4px;
+  }
+
+  .token-selector-text {
+    font-size: 0.85rem;
+    margin-left: 2px;
+  }
+
+  .token-balance {
+    font-size: 0.8rem;
+  }
+
+  .max-btn {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
+
+  .swap-details {
+    padding: var(--spacing-xs);
+  }
+
+  .swap-detail-row {
+    font-size: 0.75rem;
+  }
+
   .pool-stats {
     grid-template-columns: 1fr;
+  }
+
+  .pool-tabs {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xs);
+  }
+
+  .pool-tab {
+    padding: var(--spacing-md);
+  }
+
+  .modal-content {
+    width: 100%;
+    margin: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 85vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .header-logo-text {
+    font-size: 1.1rem;
+  }
+
+  .theme-toggler-track {
+    width: 48px;
+    height: 24px;
+  }
+
+  .theme-toggler-thumb {
+    width: 18px;
+    height: 18px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .theme-toggler-thumb.dark {
+    transform: translateX(24px);
+  }
+
+  .theme-toggler-thumb svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .swap-card:hover,
+  .pool-card:hover {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+
+  .token-input-container:hover {
+    border-color: transparent;
+  }
+
+  .swap-direction-btn:hover {
+    background: var(--card);
+    color: var(--text-secondary);
+  }
+
+  .swap-direction-btn:active {
+    background: var(--background-hover);
+    color: var(--text-primary);
+    transform: scale(0.95);
+  }
+
+  .token-selector:active {
+    background: #3a3a3a !important;
+    transform: scale(0.98);
+  }
+
+  .rainbow-button:active {
+    transform: scale(0.98);
+  }
+
+  .pool-tab:active {
+    background: var(--card);
+  }
+
+  .token-list-item:active {
+    background: var(--background-hover);
+  }
+
+  .slippage-option:active {
+    border-color: var(--border-hover);
+  }
+
+  /* Larger touch targets */
+  .settings-btn {
+    padding: var(--spacing-md);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .modal-close {
+    padding: var(--spacing-md);
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .alert-close {
+    padding: var(--spacing-sm);
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .page-container {
+    padding-top: 64px;
+  }
+
+  .swap-card,
+  .pool-card {
+    padding: var(--spacing-sm);
+  }
+
+  .token-input {
+    font-size: 1.25rem;
+  }
+
+  .token-input-container {
+    padding: var(--spacing-sm);
+  }
+
+  .rainbow-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 40px;
+  }
+
+  .modal-content {
+    max-height: 90vh;
+  }
+}
+
+/* Safe area support for notched devices */
+@supports (padding: max(0px)) {
+  .page-container {
+    padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+  }
+
+  .modal-content {
+    padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
   }
 }
 

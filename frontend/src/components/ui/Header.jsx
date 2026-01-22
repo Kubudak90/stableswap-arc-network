@@ -39,6 +39,23 @@ const GasIcon = () => (
   </svg>
 )
 
+// Hamburger Menu Icon
+const MenuIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+)
+
+// Close Icon
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+)
+
 // Logo Component
 const Logo = () => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -57,7 +74,7 @@ const Logo = () => (
 )
 
 // Network Button
-const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
+const NetworkButton = ({ isCorrectNetwork, onAddNetwork, isMobile }) => {
   const [isHovered, setIsHovered] = useState(false)
 
   if (isCorrectNetwork) {
@@ -67,14 +84,16 @@ const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          padding: '8px 12px',
+          padding: isMobile ? '10px 14px' : '8px 12px',
           background: 'rgba(0, 211, 149, 0.1)',
           border: '1px solid rgba(0, 211, 149, 0.3)',
           borderRadius: '12px',
           color: '#00d395',
-          fontSize: '0.875rem',
+          fontSize: isMobile ? '0.95rem' : '0.875rem',
           fontWeight: '500',
-          cursor: 'default'
+          cursor: 'default',
+          width: isMobile ? '100%' : 'auto',
+          justifyContent: isMobile ? 'center' : 'flex-start'
         }}
       >
         <div style={{
@@ -94,7 +113,9 @@ const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
       onClick={onAddNetwork}
       style={{
         border: '1px solid #f59e0b',
-        color: '#f59e0b'
+        color: '#f59e0b',
+        width: isMobile ? '100%' : 'auto',
+        justifyContent: isMobile ? 'center' : 'flex-start'
       }}
     >
       <WarningIcon />
@@ -104,7 +125,7 @@ const NetworkButton = ({ isCorrectNetwork, onAddNetwork }) => {
 }
 
 // Wallet Button
-const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
+const WalletButton = ({ account, isLoading, onConnect, onDisconnect, isMobile }) => {
   const [isHovered, setIsHovered] = useState(false)
 
   if (isLoading) {
@@ -113,15 +134,17 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
         style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '8px',
-          padding: '10px 20px',
+          padding: isMobile ? '12px 20px' : '10px 20px',
           background: 'var(--background-tertiary)',
           border: '1px solid var(--border)',
           borderRadius: '16px',
           color: 'var(--text-secondary)',
           fontSize: '0.95rem',
           fontWeight: '600',
-          cursor: 'wait'
+          cursor: 'wait',
+          width: isMobile ? '100%' : 'auto'
         }}
       >
         <span className="spinner" style={{ width: 16, height: 16 }}></span>
@@ -139,8 +162,9 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
         style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: '8px',
-          padding: '10px 16px',
+          padding: isMobile ? '12px 16px' : '10px 16px',
           background: isHovered ? 'var(--background-hover)' : 'var(--background-tertiary)',
           border: '1px solid var(--border)',
           borderRadius: '16px',
@@ -148,7 +172,8 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
           fontSize: '0.95rem',
           fontWeight: '600',
           cursor: 'pointer',
-          transition: 'all 0.2s ease'
+          transition: 'all 0.2s ease',
+          width: isMobile ? '100%' : 'auto'
         }}
       >
         <div style={{
@@ -163,14 +188,20 @@ const WalletButton = ({ account, isLoading, onConnect, onDisconnect }) => {
   }
 
   return (
-    <InteractiveHoverButton onClick={onConnect}>
+    <InteractiveHoverButton
+      onClick={onConnect}
+      style={{
+        width: isMobile ? '100%' : 'auto',
+        justifyContent: 'center'
+      }}
+    >
       Connect Wallet
     </InteractiveHoverButton>
   )
 }
 
 // Nav Link Component
-const NavLink = ({ to, children }) => {
+const NavLink = ({ to, children, onClick, isMobile }) => {
   const location = useLocation()
   const isActive = location.pathname === to
   const [isHovered, setIsHovered] = useState(false)
@@ -178,17 +209,21 @@ const NavLink = ({ to, children }) => {
   return (
     <Link
       to={to}
+      onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        padding: '8px 16px',
+        padding: isMobile ? '14px 20px' : '8px 16px',
         color: isActive ? 'white' : (isHovered ? 'white' : 'var(--text-secondary)'),
         textDecoration: 'none',
-        fontSize: '1rem',
+        fontSize: isMobile ? '1.1rem' : '1rem',
         fontWeight: '500',
         borderRadius: '12px',
         background: isActive ? 'var(--background-tertiary)' : (isHovered ? 'var(--background-hover)' : 'transparent'),
-        transition: 'all 0.15s ease'
+        transition: 'all 0.15s ease',
+        display: 'block',
+        width: isMobile ? '100%' : 'auto',
+        textAlign: isMobile ? 'center' : 'left'
       }}
     >
       {children}
@@ -199,6 +234,36 @@ const NavLink = ({ to, children }) => {
 // Main Header Component
 function Header({ account, connectWallet, disconnectWallet, isLoading, currentChainId }) {
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Close mobile menu on route change
+  const location = useLocation()
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
 
   useEffect(() => {
     checkNetwork()
@@ -270,118 +335,255 @@ function Header({ account, connectWallet, disconnectWallet, isLoading, currentCh
     }
   }
 
-  return (
-    <header className="header" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 100,
-      background: 'var(--background)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid var(--border)'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0 24px',
-        height: '72px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        {/* Left - Logo */}
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Logo />
-        </Link>
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
 
-        {/* Center - Navigation */}
-        <nav style={{
+  return (
+    <>
+      <header className="header" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: 'var(--background)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: isMobile ? '0 16px' : '0 24px',
+          height: isMobile ? '64px' : '72px',
           display: 'flex',
           alignItems: 'center',
-          gap: '4px',
-          position: 'absolute',
-          left: '50%',
-          transform: 'translateX(-50%)'
+          justifyContent: 'space-between'
         }}>
-          <NavLink to="/">Swap</NavLink>
-          <NavLink to="/pools">Pools</NavLink>
-          <NavLink to="/staking">Stake</NavLink>
-          <NavLink to="/faucet">Faucet</NavLink>
-          <NavLink to="/docs">Docs</NavLink>
-          <a
-            href="https://faucet.circle.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
+          {/* Left - Logo */}
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Logo />
+          </Link>
+
+          {/* Center - Desktop Navigation */}
+          {!isMobile && (
+            <nav style={{
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              padding: '8px 12px',
-              color: '#2775ca',
-              textDecoration: 'none',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              borderRadius: '12px',
-              background: 'rgba(39, 117, 202, 0.1)',
-              border: '1px solid rgba(39, 117, 202, 0.2)',
-              transition: 'all 0.15s ease',
-              marginLeft: '8px'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(39, 117, 202, 0.2)'
-              e.target.style.borderColor = 'rgba(39, 117, 202, 0.4)'
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(39, 117, 202, 0.1)'
-              e.target.style.borderColor = 'rgba(39, 117, 202, 0.2)'
-            }}
-            title="Get USDC for gas fees"
-          >
-            <GasIcon />
-            Gas
-            <ExternalLinkIcon />
-          </a>
-        </nav>
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}>
+              <NavLink to="/">Swap</NavLink>
+              <NavLink to="/pools">Pools</NavLink>
+              <NavLink to="/staking">Stake</NavLink>
+              <NavLink to="/faucet">Faucet</NavLink>
+              <NavLink to="/docs">Docs</NavLink>
+              <a
+                href="https://faucet.circle.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  color: '#2775ca',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  borderRadius: '12px',
+                  background: 'rgba(39, 117, 202, 0.1)',
+                  border: '1px solid rgba(39, 117, 202, 0.2)',
+                  transition: 'all 0.15s ease',
+                  marginLeft: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(39, 117, 202, 0.2)'
+                  e.target.style.borderColor = 'rgba(39, 117, 202, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(39, 117, 202, 0.1)'
+                  e.target.style.borderColor = 'rgba(39, 117, 202, 0.2)'
+                }}
+                title="Get USDC for gas fees"
+              >
+                <GasIcon />
+                Gas
+                <ExternalLinkIcon />
+              </a>
+            </nav>
+          )}
 
-        {/* Right - Theme + Network + Wallet */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <ThemeToggler />
-          <NetworkButton
-            isCorrectNetwork={isCorrectNetwork}
-            onAddNetwork={handleAddNetwork}
-          />
-          <WalletButton
-            account={account}
-            isLoading={isLoading}
-            onConnect={connectWallet}
-            onDisconnect={disconnectWallet}
-          />
+          {/* Right - Desktop: Theme + Network + Wallet, Mobile: Menu Button */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            {!isMobile && (
+              <>
+                <ThemeToggler />
+                <NetworkButton
+                  isCorrectNetwork={isCorrectNetwork}
+                  onAddNetwork={handleAddNetwork}
+                />
+                <WalletButton
+                  account={account}
+                  isLoading={isLoading}
+                  onConnect={connectWallet}
+                  onDisconnect={disconnectWallet}
+                />
+              </>
+            )}
+            {isMobile && (
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu Overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '64px',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'var(--background)',
+            zIndex: 99,
+            overflowY: 'auto',
+            animation: 'slideDown 0.2s ease'
+          }}
+        >
+          <div style={{
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            {/* Navigation Links */}
+            <nav style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              marginBottom: '24px'
+            }}>
+              <NavLink to="/" onClick={closeMobileMenu} isMobile>Swap</NavLink>
+              <NavLink to="/pools" onClick={closeMobileMenu} isMobile>Pools</NavLink>
+              <NavLink to="/staking" onClick={closeMobileMenu} isMobile>Stake</NavLink>
+              <NavLink to="/faucet" onClick={closeMobileMenu} isMobile>Faucet</NavLink>
+              <NavLink to="/docs" onClick={closeMobileMenu} isMobile>Docs</NavLink>
+              <a
+                href="https://faucet.circle.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={closeMobileMenu}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '14px 20px',
+                  color: '#2775ca',
+                  textDecoration: 'none',
+                  fontSize: '1.1rem',
+                  fontWeight: '500',
+                  borderRadius: '12px',
+                  background: 'rgba(39, 117, 202, 0.1)',
+                  border: '1px solid rgba(39, 117, 202, 0.2)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <GasIcon />
+                Get Gas (USDC)
+                <ExternalLinkIcon />
+              </a>
+            </nav>
+
+            {/* Divider */}
+            <div style={{
+              height: '1px',
+              background: 'var(--border)',
+              margin: '8px 0 24px'
+            }} />
+
+            {/* Theme Toggle */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 20px',
+              background: 'var(--background-secondary)',
+              borderRadius: '12px',
+              marginBottom: '12px'
+            }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Theme</span>
+              <ThemeToggler />
+            </div>
+
+            {/* Network Button */}
+            <div style={{ marginBottom: '12px' }}>
+              <NetworkButton
+                isCorrectNetwork={isCorrectNetwork}
+                onAddNetwork={handleAddNetwork}
+                isMobile
+              />
+            </div>
+
+            {/* Wallet Button */}
+            <WalletButton
+              account={account}
+              isLoading={isLoading}
+              onConnect={connectWallet}
+              onDisconnect={disconnectWallet}
+              isMobile
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Animation Keyframes */}
       <style>{`
-        @media (max-width: 768px) {
-          nav {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            top: auto !important;
-            transform: none !important;
-            background: var(--card) !important;
-            border-top: 1px solid var(--border) !important;
-            padding: 8px !important;
-            justify-content: space-around !important;
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
           }
         }
       `}</style>
-    </header>
+    </>
   )
 }
 
